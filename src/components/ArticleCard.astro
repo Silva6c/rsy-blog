@@ -1,7 +1,7 @@
 ---
 // ─── 文章卡片组件 ───
 import type { CollectionEntry } from 'astro:content';
-import { estimateReadingTime } from '@/lib/utils';
+import { estimateReadingTime, formatDate } from '@/lib/utils';
 import { BASE } from '@/lib/constants';
 
 export interface Props {
@@ -40,11 +40,7 @@ const { title, excerpt, publishedAt, tags } = article.data;
     <!-- 元信息 -->
     <div class="mt-4 flex items-center gap-3 text-xs text-[hsl(var(--muted-foreground))]">
       <time datetime={publishedAt.toISOString()}>
-        {publishedAt.toLocaleDateString('zh-CN', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })}
+        {formatDate(publishedAt)}
       </time>
       <span>·</span>
       <span>{estimateReadingTime(article.body ?? '')} 分钟阅读</span>

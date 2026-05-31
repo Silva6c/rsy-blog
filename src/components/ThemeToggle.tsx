@@ -6,17 +6,8 @@ export default function ThemeToggle() {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
-    // 初始化：读取 html 的 data-theme 属性
-    const html = document.documentElement;
-    const current = html.getAttribute('data-theme');
+    const current = document.documentElement.getAttribute('data-theme');
     setIsDark(current !== 'light');
-
-    // 检查系统偏好
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
-    if (current === null && mediaQuery.matches) {
-      setIsDark(false);
-      html.setAttribute('data-theme', 'light');
-    }
   }, []);
 
   const toggle = () => {

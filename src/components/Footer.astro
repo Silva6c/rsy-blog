@@ -1,9 +1,12 @@
+---
+import { SITE_NAME } from '@/lib/constants';
+---
 <footer class="border-t border-[hsl(var(--border))] bg-[hsl(var(--background-secondary))]">
   <div class="mx-auto max-w-4xl px-4 py-8">
     <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
       <!-- 版权 -->
       <p class="text-sm text-[hsl(var(--muted-foreground))]">
-        &copy; {new Date().getFullYear()} RSY&rsquo;s 1st BLOG
+        &copy; {new Date().getFullYear()} {SITE_NAME}
       </p>
 
       <!-- 技术栈标签 -->

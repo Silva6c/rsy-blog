@@ -8,25 +8,27 @@ export default function GiscusComments() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // 未配置时跳过
+    if (!GISCUS_REPO || !GISCUS_REPO_ID || !GISCUS_CATEGORY_ID) return;
     // 避免重复加载
     if (containerRef.current?.querySelector('iframe')) return;
+
+    const theme = document.documentElement.getAttribute('data-theme') || 'dark';
 
     const script = document.createElement('script');
     script.src = 'https://giscus.app/client.js';
     script.async = true;
     script.crossOrigin = 'anonymous';
 
-    // Giscus 配置
     script.setAttribute('data-repo', GISCUS_REPO);
     script.setAttribute('data-repo-id', GISCUS_REPO_ID);
     script.setAttribute('data-category-id', GISCUS_CATEGORY_ID);
     script.setAttribute('data-category', 'Announcements');
     script.setAttribute('data-mapping', 'pathname');
-    script.setAttribute('data-strict', '0');
     script.setAttribute('data-reactions-enabled', '1');
     script.setAttribute('data-emit-metadata', '0');
     script.setAttribute('data-input-position', 'bottom');
-    script.setAttribute('data-theme', 'dark');
+    script.setAttribute('data-theme', theme);
     script.setAttribute('data-lang', 'zh-CN');
     script.setAttribute('data-loading', 'lazy');
 
@@ -43,7 +45,7 @@ export default function GiscusComments() {
       {(!GISCUS_REPO || !GISCUS_REPO_ID || !GISCUS_CATEGORY_ID) ? (
         <div className="rounded-[var(--radius)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 text-center text-sm text-[hsl(var(--muted-foreground))]">
           <p>评论功能尚未配置</p>
-          <p class="mt-1 text-xs">
+          <p className="mt-1 text-xs">
             请在 <code className="rounded bg-[hsl(var(--code-bg))] px-1 py-0.5">.env</code> 中设置
             <code className="rounded bg-[hsl(var(--code-bg))] px-1 py-0.5 ml-1">PUBLIC_GISCUS_*</code> 变量
           </p>

@@ -1,7 +1,7 @@
 ---
 // ─── 页头导航 ───
 import ThemeToggle from '@/components/ThemeToggle.tsx';
-import { BASE } from '@/lib/constants';
+import { BASE, SITE_NAME } from '@/lib/constants';
 
 const NAV_ITEMS = [
   { href: BASE, label: '首页' },
@@ -9,15 +9,15 @@ const NAV_ITEMS = [
 ];
 ---
 
-<header class="sticky top-0 z-50 border-b border-[hsl(var(--border))] bg-[hsl(var(--background))/0.8] backdrop-blur-xl supports-[backdrop-filter]:bg-[hsl(var(--background))/0.6]">
+<header class="sticky top-0 z-50 border-b border-[hsl(var(--border))] bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
   <nav class="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
     <!-- Logo -->
     <a
       href={BASE}
       class="text-lg font-bold tracking-tight transition-opacity hover:opacity-80"
     >
-      <span class="bg-gradient-to-r from-[hsl(var(--primary))] to-cyan-300 bg-clip-text text-transparent">
-        RSY&rsquo;s 1st BLOG
+      <span class="text-gradient-brand">
+        {SITE_NAME}
       </span>
     </a>
 
@@ -31,15 +31,14 @@ const NAV_ITEMS = [
           {item.label}
         </a>
       ))}
-      <ThemeToggle client:load />
     </div>
 
-    <!-- 移动端 -->
-    <div class="flex items-center gap-2 sm:hidden">
+    <!-- ThemeToggle + 移动菜单按钮 -->
+    <div class="flex items-center gap-2">
       <ThemeToggle client:load />
       <button
         id="mobile-menu-btn"
-        class="rounded-[var(--radius)] p-2 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
+        class="rounded-[var(--radius)] p-2 sm:hidden text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
         aria-label="打开菜单"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

@@ -127,6 +127,19 @@ pre {
 code {
   font-family: var(--font-mono);
   font-size: 0.875em;
+  background-color: hsl(var(--code-bg));
+  border-radius: 0.25rem;
+  padding: 0.125em 0.375em;
+}
+
+/* ─── 工具类 ─── */
+
+/* 品牌色渐变文字 */
+.text-gradient-brand {
+  background: linear-gradient(to right, hsl(var(--primary)), #67e8f9);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* 链接 — 品牌色渐变 */

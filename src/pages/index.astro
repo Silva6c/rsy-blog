@@ -3,7 +3,7 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import ArticleCard from '@/components/ArticleCard.astro';
 import { getCollection } from 'astro:content';
-import { BASE } from '@/lib/constants';
+import { BASE, SITE_NAME } from '@/lib/constants';
 
 // 获取所有已发布的文章，按日期降序
 const articles = await getCollection('blog');
@@ -22,8 +22,8 @@ const allTags = [...new Set(publishedArticles.flatMap((a) => a.data.tags))].sort
   <!-- Hero 区域 -->
   <section class="mb-12 text-center">
     <h1 class="text-4xl font-bold tracking-tight sm:text-5xl">
-      <span class="bg-gradient-to-r from-[hsl(var(--primary))] to-cyan-300 bg-clip-text text-transparent">
-        RSY&rsquo;s 1st BLOG
+      <span class="text-gradient-brand">
+        {SITE_NAME}
       </span>
     </h1>
     <p class="mt-4 text-lg text-[hsl(var(--muted-foreground))]">

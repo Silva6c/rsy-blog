@@ -2,9 +2,8 @@
 // ─── 全局布局组件 ───
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
-import ThemeToggle from '@/components/ThemeToggle.tsx';
 import '@/styles/globals.css';
-import { BASE } from '@/lib/constants';
+import { BASE, SITE_NAME, SITE_DESCRIPTION } from '@/lib/constants';
 
 export interface Props {
   /** 页面标题（会追加到站点名后面） */
@@ -17,8 +16,6 @@ export interface Props {
   showFooter?: boolean;
 }
 
-const SITE_NAME = "RSY's 1st BLOG";
-const SITE_DESCRIPTION = "RSY 的个人技术博客 — 记录学习、思考与创造";
 const { title, description, ogImage, showFooter = true } = Astro.props;
 
 const pageTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;

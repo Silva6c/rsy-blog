@@ -11,9 +11,8 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const isConfigured = Boolean(
-    import.meta.env.PUBLIC_SUPABASE_URL && import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
-  );
+  const isConfigured =
+    import.meta.env.PUBLIC_SUPABASE_URL && import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
   /** 发送 Magic Link（无密码登录） */
   const handleMagicLink = async (e: React.FormEvent) => {
@@ -33,7 +32,7 @@ export default function LoginForm() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/admin`,
+        emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}admin`,
       },
     });
 
@@ -61,7 +60,7 @@ export default function LoginForm() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
-        redirectTo: `${window.location.origin}/admin`,
+        redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}admin`,
       },
     });
     if (error) {
