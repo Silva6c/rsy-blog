@@ -1,22 +1,19 @@
 ---
-// ─── 管理面板（简易版） ───
-// 当前版本：展示管理入口 + 跳转到外部管理后台
-// 未来版本：在线编辑文章、上传图片到 R2
-
+// ─── 管理面板（毛玻璃风格） ───
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { BASE } from '@/lib/constants';
 ---
 
 <BaseLayout title="管理面板" description="博客管理后台">
   <div class="mx-auto max-w-2xl">
-    <h1 class="mb-2 text-2xl font-bold">管理面板</h1>
+    <h1 class="mb-2 text-2xl font-bold" style="font-family: 'Noto Serif SC', serif;">管理面板</h1>
     <p class="mb-8 text-sm text-[hsl(var(--muted-foreground))]">
       博客系统管理中心。在线编辑功能将在后续版本中提供。
     </p>
 
     <!-- 管理入口卡片 -->
     <div class="grid gap-4 sm:grid-cols-2">
-      <div class="rounded-[var(--radius)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 transition-shadow hover:shadow-md">
+      <div class="glass-card p-6">
         <h2 class="font-semibold">📝 文章管理</h2>
         <p class="mt-1 text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">
           当前为 Markdown 驱动模式。文章以 <code class="rounded bg-[hsl(var(--code-bg))] px-1 py-0.5 text-xs">.md</code>
@@ -28,7 +25,7 @@ import { BASE } from '@/lib/constants';
         </p>
       </div>
 
-      <div class="rounded-[var(--radius)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 transition-shadow hover:shadow-md">
+      <div class="glass-card p-6">
         <h2 class="font-semibold">🖼️ 图片存储</h2>
         <p class="mt-1 text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">
           图片存储在 Cloudflare R2 免费桶中（10GB 免费额度）。可通过 Dashboard 或 API 上传。
@@ -44,7 +41,7 @@ import { BASE } from '@/lib/constants';
         </a>
       </div>
 
-      <div class="rounded-[var(--radius)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 transition-shadow hover:shadow-md">
+      <div class="glass-card p-6">
         <h2 class="font-semibold">🔐 用户认证</h2>
         <p class="mt-1 text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">
           Supabase Auth 提供邮箱登录和 OAuth。注册后首个用户需手动设为管理员。
@@ -60,7 +57,7 @@ import { BASE } from '@/lib/constants';
         </a>
       </div>
 
-      <div class="rounded-[var(--radius)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 transition-shadow hover:shadow-md">
+      <div class="glass-card p-6">
         <h2 class="font-semibold">📊 站点统计</h2>
         <p class="mt-1 text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">
           GitHub 仓库自带流量统计（Insights → Traffic），可查看 PV、UV、来源等基础数据。
@@ -78,13 +75,13 @@ import { BASE } from '@/lib/constants';
     </div>
 
     <!-- 快速操作 -->
-    <div class="mt-8 rounded-[var(--radius)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
+    <div class="mt-8 glass-card p-6">
       <h2 class="font-semibold">⚡ 快速操作</h2>
       <div class="mt-3 flex flex-wrap gap-3">
-        <a href={BASE} class="rounded-[var(--radius)] bg-[hsl(var(--muted))] px-4 py-2 text-sm transition-colors hover:bg-[hsl(var(--primary))] hover:text-[hsl(var(--primary-foreground))]">
+        <a href={BASE} class="glass-button inline-block px-4 py-2 text-sm transition-all hover:text-[hsl(var(--foreground))]">
           返回首页
         </a>
-        <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="rounded-[var(--radius)] bg-[hsl(var(--muted))] px-4 py-2 text-sm transition-colors hover:bg-[hsl(var(--primary))] hover:text-[hsl(var(--primary-foreground))]">
+        <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="glass-button inline-block px-4 py-2 text-sm transition-all hover:text-[hsl(var(--foreground))]">
           管理 GitHub
         </a>
       </div>

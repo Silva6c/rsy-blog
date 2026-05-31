@@ -21,6 +21,7 @@
 | 框架 | Astro（SSG 模式） | ^5.7 |
 | 样式 | TailwindCSS v4 + Shadcn UI | ^4.1 |
 | UI 组件 | React 19（仅交互 Island） | ^19.1 |
+| 动画 | Framer Motion | ^12.40 |
 | 认证 | Supabase Auth（Magic Link + GitHub OAuth） | ^2.49 |
 | 图片存储 | Cloudflare R2（10GB 免费） | — |
 | 评论 | Giscus（GitHub Discussions） | — |
@@ -34,8 +35,13 @@
 ### 3.2 Shadcn UI：只用于交互组件
 Button、Input、Card、Avatar 四个组件在 `src/components/ui/`。静态内容全部用原生 `.astro` 组件 + TailwindCSS。
 
-### 3.3 设计风格：现代科技风
-深色默认，青色渐变品牌色，JetBrains Mono 代码字体，毛玻璃导航栏。
+### 3.3 设计风格：毛玻璃科技风（Kirameku 灵感）
+- **毛玻璃效果**：`.glass-card` / `.glass-button` / `.glass-input`，`backdrop-filter: blur(12px)` + 半透明背景
+- **流动渐变背景**：深色模式 5 色标渐变 + `@keyframes gradient-flow` 20s 循环
+- **品牌色**：indigo `hsl(239 84% 67%)` + 渐变到 sky `#38bdf8`
+- **字体**：Inter + Noto Sans SC（正文）· Noto Serif SC（标题）· JetBrains Mono（代码）
+- **暗色默认** + 浅色切换，CSS 变量驱动
+- **交互增强**：阅读进度条、代码复制按钮、点击涟漪效果、回到顶部、欢迎屏幕动画
 
 ### 3.4 BASE 路径模式（核心 · 必读）
 因为是 GitHub Pages **项目页**（非用户页），部署在子路径 `/rsy-blog/` 下。**所有内部链接必须加前缀**：
@@ -158,12 +164,13 @@ npm run preview  # 预览构建产物
 
 | Token | 值 |
 |-------|-----|
-| 品牌色 | `hsl(187 100% 42%)` 青色 |
-| 背景 | `hsl(222 47% 6%)` 深蓝黑 |
-| 卡片 | `hsl(222 47% 10%)` |
-| 字体 | Inter + Noto Sans SC（正文）· JetBrains Mono（代码） |
-| 圆角 | `0.625rem` |
-| 工具类 | `.text-gradient-brand` 品牌渐变文字 |
+| 品牌色 | `hsl(239 84% 67%)` indigo |
+| 强调渐变 | indigo → `#38bdf8` sky |
+| 深色背景 | 流动渐变 `#0f0b2e → #1a1145 → #0d1b3e → #1e1145` |
+| 卡片 | 半透明 `rgba(255,255,255,0.06)` + `backdrop-filter: blur(12px)` |
+| 字体 | Inter + Noto Sans SC（正文）· Noto Serif SC（标题）· JetBrains Mono（代码） |
+| 圆角 | `0.75rem` |
+| 工具类 | `.text-gradient-brand` 品牌渐变文字 · `.glass-card` 毛玻璃卡片 |
 
 ## 10. 免费服务一览
 

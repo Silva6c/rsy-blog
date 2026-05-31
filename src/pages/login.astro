@@ -1,8 +1,5 @@
 ---
-// ─── 登录页 ───
-// 使用 Supabase Auth 进行邮箱登录和 OAuth 登录
-// 登录成功后跳转到管理面板
-
+// ─── 登录页（毛玻璃风格） ───
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import LoginForm from '@/components/LoginForm.tsx';
 ---
@@ -14,13 +11,13 @@ import LoginForm from '@/components/LoginForm.tsx';
   <div class="mx-auto max-w-md">
     <!-- 标题 -->
     <div class="mb-8 text-center">
-      <h1 class="text-2xl font-bold">登录</h1>
+      <h1 class="text-2xl font-bold" style="font-family: 'Noto Serif SC', serif;">登录</h1>
       <p class="mt-2 text-sm text-[hsl(var(--muted-foreground))]">
         登录后可管理文章和查看统计数据
       </p>
     </div>
 
-    <!-- 登录表单（React Island — 需要客户端交互） -->
+    <!-- 登录表单（React Island） -->
     <LoginForm client:load />
 
     <!-- 说明 -->

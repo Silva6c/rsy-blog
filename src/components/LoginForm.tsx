@@ -1,4 +1,4 @@
-// ─── 登录表单（React Island） ───
+// ─── 登录表单（毛玻璃风格） ───
 
 import { useState } from 'react';
 import { getSupabase } from '@/lib/supabase';
@@ -14,7 +14,7 @@ export default function LoginForm() {
   const isConfigured =
     import.meta.env.PUBLIC_SUPABASE_URL && import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
-  /** 发送 Magic Link（无密码登录） */
+  /** 发送 Magic Link */
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
@@ -99,7 +99,7 @@ export default function LoginForm() {
             required
             disabled={loading}
           />
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full" variant="glass" disabled={loading}>
             {loading ? '发送中...' : '发送登录链接'}
           </Button>
         </form>
@@ -110,7 +110,7 @@ export default function LoginForm() {
             <span className="w-full border-t border-[hsl(var(--border))]" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-[hsl(var(--card))] px-2 text-[hsl(var(--muted-foreground))]">
+            <span className="bg-transparent px-2 text-[hsl(var(--muted-foreground))]">
               或者
             </span>
           </div>

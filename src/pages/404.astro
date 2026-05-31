@@ -1,11 +1,12 @@
 ---
+// ─── 404 页面（毛玻璃风格） ───
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { BASE } from '@/lib/constants';
 ---
 
 <BaseLayout title="404 — 页面未找到" description="你寻找的页面不存在">
   <div class="flex flex-col items-center justify-center py-20 text-center">
-    <span class="text-8xl font-bold text-gradient-brand">
+    <span class="text-8xl font-bold text-gradient-brand" style="font-family: 'Noto Serif SC', serif;">
       404
     </span>
     <p class="mt-6 text-lg text-[hsl(var(--muted-foreground))]">
@@ -13,7 +14,7 @@ import { BASE } from '@/lib/constants';
     </p>
     <a
       href={BASE}
-      class="mt-8 inline-flex items-center gap-2 rounded-[var(--radius)] bg-[hsl(var(--primary))] px-6 py-3 text-sm font-medium text-[hsl(var(--primary-foreground))] transition-opacity hover:opacity-90"
+      class="mt-8 glass-button inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-[hsl(var(--foreground))]"
     >
       返回首页
     </a>

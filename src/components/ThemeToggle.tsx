@@ -1,4 +1,4 @@
-// ─── 暗色/浅色模式切换（React Island） ───
+// ─── 暗色/浅色模式切换（毛玻璃按钮） ───
 
 import { useState, useEffect } from 'react';
 
@@ -14,7 +14,6 @@ export default function ThemeToggle() {
     const newTheme = isDark ? 'light' : 'dark';
     setIsDark(!isDark);
     document.documentElement.setAttribute('data-theme', newTheme);
-    // 持久化到 localStorage
     try {
       localStorage.setItem('theme', newTheme);
     } catch {
@@ -25,7 +24,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      className="rounded-[var(--radius)] p-2 text-[hsl(var(--muted-foreground))] transition-colors hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))]"
+      className="glass-button rounded-lg p-2 transition-all hover:scale-110"
       aria-label={isDark ? '切换到浅色模式' : '切换到深色模式'}
       title={isDark ? '切换到浅色模式' : '切换到深色模式'}
     >

@@ -1,5 +1,5 @@
 ---
-// ─── 首页 — 文章列表 ───
+// ─── 首页 — 文章列表（毛玻璃风格） ───
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import ArticleCard from '@/components/ArticleCard.astro';
 import { getCollection } from 'astro:content';
@@ -21,7 +21,7 @@ const allTags = [...new Set(publishedArticles.flatMap((a) => a.data.tags))].sort
 >
   <!-- Hero 区域 -->
   <section class="mb-12 text-center">
-    <h1 class="text-4xl font-bold tracking-tight sm:text-5xl">
+    <h1 class="text-4xl font-bold tracking-tight sm:text-5xl" style="font-family: 'Noto Serif SC', serif;">
       <span class="text-gradient-brand">
         {SITE_NAME}
       </span>
@@ -35,7 +35,7 @@ const allTags = [...new Set(publishedArticles.flatMap((a) => a.data.tags))].sort
   <section>
     {
       publishedArticles.length === 0 ? (
-        <div class="text-center py-20">
+        <div class="glass-card text-center py-20">
           <div class="mb-4 text-5xl">📝</div>
           <p class="text-[hsl(var(--muted-foreground))] text-lg">
             还没有文章，敬请期待...
@@ -58,7 +58,7 @@ const allTags = [...new Set(publishedArticles.flatMap((a) => a.data.tags))].sort
   <div class="mt-12 text-center">
     <a
       href={`${BASE}rss.xml`}
-      class="inline-flex items-center gap-2 rounded-[var(--radius)] border border-[hsl(var(--border))] px-4 py-2 text-sm text-[hsl(var(--muted-foreground))] transition-colors hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
+      class="glass-button inline-flex items-center gap-2 text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
     >
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M4 11a9 9 0 0 1 9 9" />

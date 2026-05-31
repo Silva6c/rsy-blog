@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'destructive' | 'outline' | 'ghost' | 'link';
+  variant?: 'default' | 'destructive' | 'outline' | 'ghost' | 'link' | 'glass';
   size?: 'default' | 'sm' | 'lg' | 'icon';
   asChild?: boolean;
 }
@@ -30,6 +30,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             'hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))]',
           variant === 'link' &&
             'text-[hsl(var(--primary))] underline-offset-4 hover:underline',
+          variant === 'glass' &&
+            'glass-button',
 
           // 尺寸
           size === 'default' && 'h-10 px-4 py-2',

@@ -1,0 +1,71 @@
+---
+// ─── 友链页（毛玻璃风格） ───
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import friendsData from '@/data/friends.json';
+
+const { friends } = friendsData;
+---
+
+<BaseLayout title="友链" description="友情链接">
+  <div class="mx-auto max-w-3xl">
+    <div class="mb-10 text-center">
+      <h1 class="text-3xl font-bold" style="font-family: 'Noto Serif SC', serif;">友链</h1>
+      <p class="mt-2 text-[hsl(var(--muted-foreground))]">
+        交换友链请通过 GitHub Issue 联系
+      </p>
+    </div>
+
+    {
+      friends.length === 0 ? (
+        <div class="glass-card p-12 text-center">
+          <p class="text-[hsl(var(--muted-foreground))]">还没有友链，快来交换吧~</p>
+        </div>
+      ) : (
+        <div class="grid gap-4 sm:grid-cols-2">
+          {friends.map((friend) => (
+            <a
+              href={friend.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="glass-card group flex items-center gap-4 p-5 no-underline"
+            >
+              <!-- 头像 -->
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--primary))/0.15] text-lg font-bold text-[hsl(var(--primary))]">
+                {friend.name.slice(0, 1)}
+              </div>
+              <!-- 信息 -->
+              <div class="min-w-0 flex-1">
+                <h3 class="font-medium text-[hsl(var(--foreground))] transition-colors group-hover:text-[hsl(var(--primary))] truncate">
+                  {friend.name}
+                </h3>
+                <p class="mt-0.5 text-xs text-[hsl(var(--muted-foreground))] line-clamp-1">
+                  {friend.description}
+                </p>
+              </div>
+              <svg class="h-4 w-4 shrink-0 text-[hsl(var(--muted-foreground))] transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 17L17 7M7 7h10v10"/>
+              </svg>
+            </a>
+          ))}
+        </div>
+      )
+    }
+
+    <!-- 交换友链说明 -->
+    <div class="glass-card mt-8 p-6 text-center">
+      <h2 class="text-lg font-semibold">🔗 交换友链</h2>
+      <p class="mt-2 text-sm text-[hsl(var(--muted-foreground))]">
+        想交换友链？请通过
+        <a
+          href="https://github.com/Silva6c/rsy-blog/issues"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="mx-1 font-medium text-[hsl(var(--primary))] hover:underline"
+        >
+          GitHub Issues
+        </a>
+        提交申请
+      </p>
+    </div>
+  </div>
+</BaseLayout>

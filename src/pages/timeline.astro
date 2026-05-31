@@ -1,0 +1,89 @@
+---
+// ─── 时间轴归档页（毛玻璃风格） ───
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { formatDate } from '@/lib/utils';
+
+const articles = await getCollection('blog');
+const published = articles
+  .filter((a) => !a.data.draft)
+  .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
+
+// 按年份分组
+const groupedByYear = new Map<number, typeof published>();
+for (const article of published) {
+  const year = article.data.publishedAt.getFullYear();
+  if (!groupedByYear.has(year)) {
+    groupedByYear.set(year, []);
+  }
+  groupedByYear.get(year)!.push(article);
+}
+
+const years = [...groupedByYear.keys()].sort((a, b) => b - a);
+---
+
+<BaseLayout title="归档" description="文章时间归档">
+  <div class="mx-auto max-w-2xl">
+    <div class="mb-10 text-center">
+      <h1 class="text-3xl font-bold" style="font-family: 'Noto Serif SC', serif;">归档</h1>
+      <p class="mt-2 text-[hsl(var(--muted-foreground))]">
+        共 {published.length} 篇文章
+      </p>
+    </div>
+
+    {
+      published.length === 0 ? (
+        <div class="glass-card p-12 text-center">
+          <p class="text-[hsl(var(--muted-foreground))]">暂无文章</p>
+        </div>
+      ) : (
+        <div class="relative">
+          <!-- 时间线竖线 -->
+          <div class="absolute left-[19px] top-2 bottom-2 w-px bg-[hsl(var(--border))]" />
+
+          <div class="space-y-10">
+            {years.map((year) => {
+              const yearArticles = groupedByYear.get(year)!;
+              return (
+                <div>
+                  <!-- 年份标题 -->
+                  <div class="mb-4 flex items-center gap-3">
+                    <div class="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-sm font-bold text-[hsl(var(--primary-foreground))] shadow-md shadow-[hsl(var(--primary))/0.3]">
+                      {year}
+                    </div>
+                    <h2 class="text-xl font-bold text-[hsl(var(--foreground))]">
+                      {year}
+                    </h2>
+                  </div>
+
+                  <!-- 年份下的文章 -->
+                  <div class="ml-5 space-y-3">
+                    {yearArticles.map((article) => (
+                      <a
+                        href={`/rsy-blog/blog/${article.slug}`}
+                        class="glass-card group relative flex items-center gap-4 p-4 no-underline"
+                      >
+                        <!-- 时间线圆点 -->
+                        <div class="absolute -left-[25px] top-1/2 z-10 h-3 w-3 -translate-y-1/2 rounded-full border-2 border-[hsl(var(--primary))] bg-transparent transition-colors group-hover:bg-[hsl(var(--primary))]" />
+
+                        <!-- 日期 -->
+                        <time class="shrink-0 text-xs text-[hsl(var(--muted-foreground))] tabular-nums">
+                          {formatDate(article.data.publishedAt)}
+                        </time>
+
+                        <!-- 标题 -->
+                        <span class="font-medium text-[hsl(var(--foreground))] transition-colors group-hover:text-[hsl(var(--primary))] truncate">
+                          {article.data.title}
+                        </span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )
+    }
+  </div>
+</BaseLayout>

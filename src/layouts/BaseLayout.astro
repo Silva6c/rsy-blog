@@ -1,7 +1,10 @@
 ---
-// ─── 全局布局组件 ───
+// ─── 全局布局组件（毛玻璃风格） ───
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
+import ClickEffect from '@/components/ClickEffect.tsx';
+import BackToTop from '@/components/BackToTop.tsx';
+import WelcomeScreen from '@/components/WelcomeScreen.tsx';
 import '@/styles/globals.css';
 import { BASE, SITE_NAME, SITE_DESCRIPTION } from '@/lib/constants';
 
@@ -48,7 +51,7 @@ const pageDescription = description ?? SITE_DESCRIPTION;
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;700&display=swap"
       rel="stylesheet"
     />
 
@@ -66,14 +69,21 @@ const pageDescription = description ?? SITE_DESCRIPTION;
       })();
     </script>
   </head>
-  <body class="min-h-screen flex flex-col bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+  <body class="min-h-screen flex flex-col">
+    <!-- 欢迎屏幕（首次访问显示） -->
+    <WelcomeScreen client:load />
+
     <Header />
 
     <!-- 主内容 -->
-    <main class="flex-1 mx-auto w-full max-w-4xl px-4 py-8 sm:py-12">
+    <main class="flex-1 mx-auto w-full max-w-5xl px-4 py-8 sm:py-12">
       <slot />
     </main>
 
     {showFooter && <Footer />}
+
+    <!-- 全局交互组件（客户端渲染） -->
+    <ClickEffect client:load />
+    <BackToTop client:load />
   </body>
 </html>

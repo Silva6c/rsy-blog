@@ -1,0 +1,16 @@
+{
+  "friends": [
+    {
+      "name": "Kirameku",
+      "url": "https://boke.hiromu.top",
+      "description": "Starhiro 的小站 — 毛玻璃风格全栈博客",
+      "avatar": ""
+    },
+    {
+      "name": "Astro",
+      "url": "https://astro.build",
+      "description": "现代化静态站点框架",
+      "avatar": ""
+    }
+  ]
+}

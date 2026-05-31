@@ -1,0 +1,18 @@
+{
+  "projects": [
+    {
+      "name": "RSY Blog",
+      "description": "零运行成本个人博客，基于 Astro SSG + GitHub Pages，毛玻璃设计风格",
+      "url": "https://github.com/Silva6c/rsy-blog",
+      "tags": ["Astro", "TypeScript", "TailwindCSS"],
+      "stars": null
+    },
+    {
+      "name": "Example Project",
+      "description": "项目描述占位 — 等你来填充真实项目",
+      "url": "https://github.com/Silva6c",
+      "tags": ["WIP"],
+      "stars": null
+    }
+  ]
+}

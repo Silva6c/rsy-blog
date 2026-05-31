@@ -1,7 +1,5 @@
 ---
-// ─── 文章目录 (Table of Contents) ───
-// 从文章内容中提取 h2/h3 标题生成页内导航
-
+// ─── 文章目录 Table of Contents（毛玻璃风格） ───
 import { cn } from '@/lib/utils';
 
 export interface Heading {
@@ -17,7 +15,6 @@ export interface Props {
 
 const { headings, class: className } = Astro.props;
 
-// 只显示 h2 和 h3
 const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
 ---
 
@@ -25,7 +22,7 @@ const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
   filteredHeadings.length > 1 && (
     <nav
       class={cn(
-        'rounded-[var(--radius)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4',
+        'glass-card p-4',
         className,
       )}
     >

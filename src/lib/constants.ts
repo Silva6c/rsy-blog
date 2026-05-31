@@ -14,6 +14,14 @@ export const SITE_URL = import.meta.env.PROD
 /** 部署路径（GitHub Pages 项目页需要，本地开发时为空） */
 export const BASE = import.meta.env.BASE_URL; // 生产: '/rsy-blog/' 开发: '/'
 
+// ─── 社交链接 ───
+
+/** GitHub 主页 */
+export const GITHUB_URL = 'https://github.com/Silva6c';
+
+/** GitHub 仓库 */
+export const REPO_URL = 'https://github.com/Silva6c/rsy-blog';
+
 // ─── Supabase（客户端安全变量） ───
 
 /** Supabase 项目 URL */

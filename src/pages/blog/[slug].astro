@@ -1,9 +1,11 @@
 ---
-// ─── 文章详情页 ───
+// ─── 文章详情页（毛玻璃风格） ───
 import { type CollectionEntry, getCollection } from 'astro:content';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import TableOfContents from '@/components/TableOfContents.astro';
 import GiscusComments from '@/components/GiscusComments.tsx';
+import ReadingProgress from '@/components/ReadingProgress.tsx';
+import CodeCopyButton from '@/components/CodeCopyButton.tsx';
 import { estimateReadingTime, formatDate } from '@/lib/utils';
 
 // 生成所有静态路径（SSG 模式）
@@ -24,7 +26,6 @@ interface Props {
 const { article } = Astro.props;
 const { title, excerpt, publishedAt, updatedAt, tags, author, coverImage } = article.data;
 
-// 从渲染后的 HTML 提取标题结构
 const { Content, headings } = await article.render();
 
 const readingTime = estimateReadingTime(article.body ?? '');
@@ -36,13 +37,17 @@ const pageDescription = excerpt ?? article.body?.slice(0, 160) ?? '';
   description={pageDescription}
   ogImage={coverImage}
 >
+  <!-- 阅读进度条 + 代码复制按钮 -->
+  <ReadingProgress client:load />
+  <CodeCopyButton client:load />
+
   <!-- 文章头部 -->
   <header class="mb-8">
     <!-- 标签 -->
     {tags.length > 0 && (
       <div class="mb-4 flex flex-wrap gap-2">
         {tags.map((tag: string) => (
-          <span class="inline-block rounded-full bg-[hsl(var(--muted))] px-3 py-1 text-xs font-medium text-[hsl(var(--muted-foreground))]">
+          <span class="inline-block rounded-full bg-[hsl(var(--primary))/0.12] px-3 py-1 text-xs font-medium text-[hsl(var(--primary))]">
             {tag}
           </span>
         ))}
@@ -50,7 +55,7 @@ const pageDescription = excerpt ?? article.body?.slice(0, 160) ?? '';
     )}
 
     <!-- 标题 -->
-    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
+    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl" style="font-family: 'Noto Serif SC', serif;">
       {title}
     </h1>
 
@@ -83,7 +88,7 @@ const pageDescription = excerpt ?? article.body?.slice(0, 160) ?? '';
   </header>
 
   <!-- 桌面端：侧边目录 + 内容 -->
-  <div class="lg:grid lg:grid-cols-[1fr_200px] lg:gap-8">
+  <div class="lg:grid lg:grid-cols-[1fr_220px] lg:gap-8">
     <!-- 文章正文 -->
     <article
       class="prose prose-invert max-w-none
@@ -95,7 +100,7 @@ const pageDescription = excerpt ?? article.body?.slice(0, 160) ?? '';
         prose-code:rounded prose-code:bg-[hsl(var(--code-bg))] prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:font-normal
         prose-pre:border prose-pre:border-[hsl(var(--border))]
         prose-img:rounded-[var(--radius)] prose-img:border prose-img:border-[hsl(var(--border))]
-        prose-blockquote:border-l-[hsl(var(--primary))] prose-blockquote:bg-[hsl(var(--muted))/0.3] prose-blockquote:py-1 prose-blockquote:pr-4
+        prose-blockquote:border-l-[hsl(var(--primary))] prose-blockquote:bg-[hsl(var(--primary))/0.05] prose-blockquote:py-1 prose-blockquote:pr-4 prose-blockquote:rounded-r-[var(--radius)]
         prose-strong:text-[hsl(var(--foreground))]
         prose-li:marker:text-[hsl(var(--muted-foreground))]
         prose-hr:border-[hsl(var(--border))]
@@ -128,8 +133,8 @@ const pageDescription = excerpt ?? article.body?.slice(0, 160) ?? '';
 
   <!-- 文章底部：作者 + 评论 -->
   <footer class="mt-12 border-t border-[hsl(var(--border))] pt-8">
-    <!-- 作者信息（简易版） -->
-    <div class="flex items-center gap-3 rounded-[var(--radius)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4">
+    <!-- 作者信息 -->
+    <div class="glass-card flex items-center gap-3 p-4">
       <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-sm font-semibold text-[hsl(var(--primary-foreground))]">
         {author.slice(0, 1).toUpperCase()}
       </div>
