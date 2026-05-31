@@ -5,6 +5,7 @@ import Footer from '@/components/Footer.astro';
 import ClickEffect from '@/components/ClickEffect.tsx';
 import BackToTop from '@/components/BackToTop.tsx';
 import WelcomeScreen from '@/components/WelcomeScreen.tsx';
+import BackgroundImage from '@/components/BackgroundImage.tsx';
 import '@/styles/globals.css';
 import { BASE, SITE_NAME, SITE_DESCRIPTION } from '@/lib/constants';
 
@@ -70,6 +71,9 @@ const pageDescription = description ?? SITE_DESCRIPTION;
     </script>
   </head>
   <body class="min-h-screen flex flex-col">
+    <!-- 背景图片层（客户端渲染） -->
+    <BackgroundImage client:load />
+
     <!-- 欢迎屏幕（首次访问显示） -->
     <WelcomeScreen client:load />
 

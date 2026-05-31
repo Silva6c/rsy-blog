@@ -112,13 +112,13 @@ body::before {
   /* 三个光球叠加 */
   background:
     /* 左上 indigo 光 */
-    radial-gradient(ellipse 600px 500px at 15% 20%, rgba(99, 102, 241, 0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 600px 500px at 15% 20%, rgba(99, 102, 241, 0.18) 0%, transparent 70%),
     /* 右上 purple 光 */
-    radial-gradient(ellipse 500px 450px at 80% 10%, rgba(168, 85, 247, 0.10) 0%, transparent 70%),
+    radial-gradient(ellipse 500px 450px at 80% 10%, rgba(168, 85, 247, 0.15) 0%, transparent 70%),
     /* 右下 cyan 光 */
-    radial-gradient(ellipse 550px 480px at 70% 80%, rgba(6, 182, 212, 0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 550px 480px at 70% 80%, rgba(6, 182, 212, 0.12) 0%, transparent 70%),
     /* 左下粉色光 */
-    radial-gradient(ellipse 400px 400px at 25% 70%, rgba(236, 72, 153, 0.06) 0%, transparent 70%);
+    radial-gradient(ellipse 400px 400px at 25% 70%, rgba(236, 72, 153, 0.10) 0%, transparent 70%);
   background-size: 100% 100%;
   animation: orb-drift 30s ease-in-out infinite;
 }
