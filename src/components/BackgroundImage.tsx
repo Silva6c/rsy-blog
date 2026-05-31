@@ -7,20 +7,24 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const BASE = import.meta.env.BASE_URL;
 
-/** 深色模式背景图 */
+/** 深色模式背景图（放 public/images/backgrounds/dark/） */
 const DARK_IMAGES = [
-  `${BASE}images/backgrounds/01-dark-abstract.jpg`,
-  `${BASE}images/backgrounds/02-blue-abstract.jpg`,
-  `${BASE}images/backgrounds/03-dark-flow.jpg`,
-  `${BASE}images/backgrounds/04-starry-night.jpg`,
+  `${BASE}images/backgrounds/dark/01_dark.png`,
+  `${BASE}images/backgrounds/dark/02_dark.png`,
+  `${BASE}images/backgrounds/dark/03_dark.png`,
+  `${BASE}images/backgrounds/dark/04_dark.png`,
+  `${BASE}images/backgrounds/dark/05_dark.png`,
+  `${BASE}images/backgrounds/dark/06_dark.jpg`,
 ];
 
-/** 浅色模式背景图（SVG 柔光渐变） */
+/** 浅色模式背景图（放 public/images/backgrounds/light/） */
 const LIGHT_IMAGES = [
-  `${BASE}images/backgrounds/light-01.svg`,
-  `${BASE}images/backgrounds/light-02.svg`,
-  `${BASE}images/backgrounds/light-03.svg`,
-  `${BASE}images/backgrounds/light-04.svg`,
+  `${BASE}images/backgrounds/light/01_light.png`,
+  `${BASE}images/backgrounds/light/02_light.png`,
+  `${BASE}images/backgrounds/light/03_light.png`,
+  `${BASE}images/backgrounds/light/04_light.png`,
+  `${BASE}images/backgrounds/light/05_light.png`,
+  `${BASE}images/backgrounds/light/06_light.jpg`,
 ];
 
 const INTERVAL = 30000;
