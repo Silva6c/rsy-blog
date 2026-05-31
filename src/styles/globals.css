@@ -1,6 +1,31 @@
 /* ─── TailwindCSS v4 入口 ─── */
 @import 'tailwindcss';
 
+/* auto 模式：无 data-theme 时跟随系统偏好 */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --background: 240 20% 98%;
+    --background-secondary: 240 15% 95%;
+    --foreground: 240 25% 10%;
+    --card: 255 255 255% / 0.6;
+    --card-foreground: 240 25% 10%;
+    --card-border: 240 15% 85% / 0.5;
+    --popover: 255 255 255% / 0.85;
+    --popover-foreground: 240 25% 10%;
+    --muted: 240 15% 92%;
+    --muted-foreground: 215 16% 47%;
+    --border: 240 15% 85% / 0.5;
+    --input: 240 15% 85% / 0.5;
+    --code-bg: 240 15% 95%;
+    --code-fg: 240 25% 10%;
+  }
+  :root:not([data-theme]) body {
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 30%, #f0f9ff 60%, #f5f3ff 100%);
+    background-attachment: fixed;
+    color-scheme: light;
+  }
+}
+
 /* ─── Shadcn UI CSS 变量（毛玻璃 · 深色默认 · indigo 品牌色） ─── */
 :root {
   /* 品牌色 — indigo */

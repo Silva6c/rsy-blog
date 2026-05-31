@@ -45,9 +45,6 @@ const pageDescription = description ?? SITE_DESCRIPTION;
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={pageDescription} />
 
-    <!-- RSS -->
-    <link rel="alternate" type="application/rss+xml" title={SITE_NAME} href={`${BASE}rss.xml`} />
-
     <!-- 字体预加载 -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -61,11 +58,15 @@ const pageDescription = description ?? SITE_DESCRIPTION;
     <!-- 主题初始化脚本（防止页面闪烁） -->
     <script is:inline>
       (function () {
-        const stored = localStorage.getItem('theme');
-        if (stored) {
-          document.documentElement.setAttribute('data-theme', stored);
-        } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
-          document.documentElement.setAttribute('data-theme', 'light');
+        const mode = localStorage.getItem('theme-mode');
+        if (mode === 'auto') {
+          // auto 模式不设 data-theme，走系统偏好
+          document.documentElement.removeAttribute('data-theme');
+        } else if (mode === 'light' || mode === 'dark') {
+          document.documentElement.setAttribute('data-theme', mode);
+        } else {
+          // 无存储时默认深色
+          document.documentElement.setAttribute('data-theme', 'dark');
         }
       })();
     </script>
