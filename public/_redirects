@@ -1,8 +1,0 @@
-# ─── Cloudflare Pages 重定向规则 ───
-# 部署后自动生效
-
-# 示例：www → 裸域（如果你的域名是 example.com）
-# https://www.example.com/*  https://example.com/:splat  301
-
-# 默认 404 处理（由 Astro 生成的 404 页面处理）
-# 如果没有自定义 404，Cloudflare Pages 有默认的

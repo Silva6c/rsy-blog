@@ -3,7 +3,7 @@
 
 import rss from '@astrojs/rss';
 import { getCollection } from 'astro:content';
-import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from '@/lib/constants';
+import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, BASE } from '@/lib/constants';
 
 export async function GET() {
   const articles = await getCollection('blog');
@@ -19,7 +19,7 @@ export async function GET() {
       title: article.data.title,
       description: article.data.excerpt ?? '',
       pubDate: article.data.publishedAt,
-      link: `/blog/${article.slug}`,
+      link: `${BASE}blog/${article.slug}`,
       categories: article.data.tags,
       author: article.data.author,
     })),

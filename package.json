@@ -15,17 +15,17 @@
     "@tailwindcss/vite": "^4.1.0",
     "astro": "^5.7.0",
     "clsx": "^2.1.1",
-    "drizzle-orm": "^0.45.2",
+
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "tailwind-merge": "^3.0.0",
     "tailwindcss": "^4.1.0"
   },
   "devDependencies": {
-    "@types/pg": "^8.20.0",
+
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
-    "drizzle-kit": "^0.31.10",
+
     "typescript": "^5.8.0"
   }
 }
