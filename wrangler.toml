@@ -6,7 +6,7 @@
 # ─── Cloudflare Pages 项目配置 ───
 
 # 项目名称（部署时使用，需与 Cloudflare Pages 上的项目名一致）
-name = "RSY"
+name = "rsy"
 
 # Pages 部署输出目录（Astro 构建产物）
 pages_build_output_dir = "dist"
