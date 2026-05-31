@@ -13,7 +13,6 @@ const IMAGES = [
   `${BASE}images/backgrounds/02-blue-abstract.jpg`,
   `${BASE}images/backgrounds/03-dark-flow.jpg`,
   `${BASE}images/backgrounds/04-starry-night.jpg`,
-  `${BASE}images/backgrounds/05-dark-gradient.jpg`,
 ];
 
 /** 图片切换间隔（毫秒），设为 0 则禁用自动切换 */
