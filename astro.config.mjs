@@ -8,7 +8,8 @@ import path from 'path';
 // import cloudflare from '@astrojs/cloudflare';
 
 export default defineConfig({
-  site: 'https://YOUR-DOMAIN.pages.dev', // 部署后替换为实际域名
+  site: 'https://silva6c.github.io',
+  base: '/CLAUDE_TEST/',
   output: 'static',
 
   integrations: [react()],
