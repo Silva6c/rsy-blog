@@ -1,22 +1,19 @@
 // ─── 全屏背景图片层 ───
-// 使用免费图源，毛玻璃博客的氛围感背景
-// 可替换为自定义图片：修改下方的 IMAGES 数组即可
+// 背景图片存放在 public/images/backgrounds/
+// 替换图片：替换该目录下的 jpg 文件即可，支持任意数量
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-/** 背景图片列表（Unsplash 精选 · 暗色系抽象/科技风 · 免费使用） */
+const BASE = import.meta.env.BASE_URL; // 开发: '/'  生产: '/rsy-blog/'
+
+/** 背景图片列表（本地文件，存放在 public/images/backgrounds/） */
 const IMAGES = [
-  // 暗紫抽象
-  'https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=1920&q=80',
-  // 深蓝粒子
-  'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1920&q=80',
-  // 暗色抽象流
-  'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1920&q=80',
-  // 深紫星空
-  'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=1920&q=80',
-  // 暗蓝纹理
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1920&q=80',
+  `${BASE}images/backgrounds/01-dark-abstract.jpg`,
+  `${BASE}images/backgrounds/02-blue-abstract.jpg`,
+  `${BASE}images/backgrounds/03-dark-flow.jpg`,
+  `${BASE}images/backgrounds/04-starry-night.jpg`,
+  `${BASE}images/backgrounds/05-dark-gradient.jpg`,
 ];
 
 /** 图片切换间隔（毫秒），设为 0 则禁用自动切换 */
