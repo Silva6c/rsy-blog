@@ -4,6 +4,7 @@ import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import ThemeToggle from '@/components/ThemeToggle.tsx';
 import '@/styles/globals.css';
+import { BASE } from '@/lib/constants';
 
 export interface Props {
   /** 页面标题（会追加到站点名后面） */
@@ -44,7 +45,7 @@ const pageDescription = description ?? SITE_DESCRIPTION;
     <meta name="twitter:description" content={pageDescription} />
 
     <!-- RSS -->
-    <link rel="alternate" type="application/rss+xml" title={SITE_NAME} href="/rss.xml" />
+    <link rel="alternate" type="application/rss+xml" title={SITE_NAME} href={`${BASE}rss.xml`} />
 
     <!-- 字体预加载 -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

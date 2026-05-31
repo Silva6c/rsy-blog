@@ -11,6 +11,9 @@ export const SITE_URL = import.meta.env.PROD
   ? 'https://silva6c.github.io'
   : 'http://localhost:4321';
 
+/** 部署路径（GitHub Pages 项目页需要，本地开发时为空） */
+export const BASE = import.meta.env.BASE_URL; // 生产: '/rsy-blog/' 开发: '/'
+
 // ─── Supabase（客户端安全变量） ───
 
 /** Supabase 项目 URL */

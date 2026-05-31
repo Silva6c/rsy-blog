@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import { BASE } from '@/lib/constants';
 ---
 
 <BaseLayout title="404 — 页面未找到" description="你寻找的页面不存在">
@@ -11,7 +12,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
       这个页面不存在，或者已经被移走了
     </p>
     <a
-      href="/"
+      href={BASE}
       class="mt-8 inline-flex items-center gap-2 rounded-[var(--radius)] bg-[hsl(var(--primary))] px-6 py-3 text-sm font-medium text-[hsl(var(--primary-foreground))] transition-opacity hover:opacity-90"
     >
       返回首页

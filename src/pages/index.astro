@@ -3,6 +3,7 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import ArticleCard from '@/components/ArticleCard.astro';
 import { getCollection } from 'astro:content';
+import { BASE } from '@/lib/constants';
 
 // 获取所有已发布的文章，按日期降序
 const articles = await getCollection('blog');
@@ -56,7 +57,7 @@ const allTags = [...new Set(publishedArticles.flatMap((a) => a.data.tags))].sort
   <!-- RSS 订阅提示 -->
   <div class="mt-12 text-center">
     <a
-      href="/rss.xml"
+      href={`${BASE}rss.xml`}
       class="inline-flex items-center gap-2 rounded-[var(--radius)] border border-[hsl(var(--border))] px-4 py-2 text-sm text-[hsl(var(--muted-foreground))] transition-colors hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
     >
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

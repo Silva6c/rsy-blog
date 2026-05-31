@@ -1,10 +1,11 @@
 ---
 // ─── 页头导航 ───
 import ThemeToggle from '@/components/ThemeToggle.tsx';
+import { BASE } from '@/lib/constants';
 
 const NAV_ITEMS = [
-  { href: '/', label: '首页' },
-  { href: '/login', label: '登录' },
+  { href: BASE, label: '首页' },
+  { href: `${BASE}login`, label: '登录' },
 ];
 ---
 
@@ -12,7 +13,7 @@ const NAV_ITEMS = [
   <nav class="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
     <!-- Logo -->
     <a
-      href="/"
+      href={BASE}
       class="text-lg font-bold tracking-tight transition-opacity hover:opacity-80"
     >
       <span class="bg-gradient-to-r from-[hsl(var(--primary))] to-cyan-300 bg-clip-text text-transparent">
