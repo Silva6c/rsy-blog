@@ -1,32 +1,32 @@
-﻿---
-title: "Hello World 鈥?闆舵垚鏈崥瀹㈠惎鑸?
-excerpt: "绗竴绡囧崥瀹㈡枃绔狅紝浠嬬粛杩欎釜闆舵垚鏈崥瀹㈢殑鎶€鏈爤鍜屾惌寤烘€濊矾銆?
+---
+title: "Hello World — 零成本博客启航"
+excerpt: "第一篇博客文章，介绍这个零成本博客的技术栈和搭建思路。"
 publishedAt: 2026-05-31
-tags: ["Astro", "GitHub Pages", "闆舵垚鏈?]
+tags: ["Astro", "GitHub Pages", "零成本"]
 author: "RSY"
 ---
 
-# Hello World 鈥?闆舵垚鏈崥瀹㈠惎鑸?
+# Hello World — 零成本博客启航
 
-娆㈣繋鏉ュ埌鎴戠殑涓汉鍗氬锛佽繖鏄涓€绡囩ず渚嬫枃绔犮€?
+欢迎来到我的个人博客！这是第一篇示例文章。
 
-## 涓轰粈涔堥€夋嫨闆舵垚鏈灦鏋勶紵
+## 为什么选择零成本架构？
 
-浣滀负鐙珛寮€鍙戣€咃紝鎴戝笇鏈涘湪 **瀹屽叏涓嶈姳閽?* 鐨勫墠鎻愪笅鎷ユ湁涓€涓珮鎬ц兘銆佸彲鎵╁睍鐨勪釜浜哄崥瀹€傜粡杩囪皟鐮旓紝鎴戦€夋嫨浜嗕互涓嬫妧鏈粍鍚堬細
+作为独立开发者，我希望在 **完全不花钱** 的前提下拥有一个高性能、可扩展的个人博客。经过调研，我选择了以下技术组合：
 
-| 灞傜骇 | 鎶€鏈?| 璐圭敤 |
+| 层级 | 技术 | 费用 |
 |------|------|------|
-| 闈欐€佺敓鎴?| Astro SSG | 鍏嶈垂 |
-| 鏍峰紡 | TailwindCSS + Shadcn UI | 鍏嶈垂 |
-| 璁よ瘉 | Supabase Auth | 鍏嶈垂 (50K MAU) |
-| 鍥剧墖瀛樺偍 | Cloudflare R2 | 鍏嶈垂 (10GB) |
-| 鎵樼 | GitHub Pages | 鍏嶈垂 (鏃犻檺甯﹀) |
-| 璇勮 | Giscus | 鍏嶈垂 (GitHub Discussions) |
-| 鍒嗘瀽 | GitHub Traffic | 鍏嶈垂 |
+| 静态生成 | Astro SSG | 免费 |
+| 样式 | TailwindCSS + Shadcn UI | 免费 |
+| 认证 | Supabase Auth | 免费 (50K MAU) |
+| 图片存储 | Cloudflare R2 | 免费 (10GB) |
+| 托管 | GitHub Pages | 免费 (无限带宽) |
+| 评论 | Giscus | 免费 (GitHub Discussions) |
+| 分析 | GitHub Traffic | 免费 |
 
-## 鎶€鏈寒鐐?
+## 技术亮点
 
-### 1. Astro 闈欐€佺敓鎴?
+### 1. Astro 静态生成
 
 ```astro
 ---
@@ -39,43 +39,43 @@ const posts = await getCollection('blog');
 </ul>
 ```
 
-Astro 鍦ㄦ瀯寤烘椂灏嗛〉闈㈤娓叉煋涓虹函 HTML锛?*闆?JavaScript 寮€閿€**锛岄灞忓姞杞芥瀬蹇€?
+Astro 在构建时将页面预渲染为纯 HTML，**零 JavaScript 开销**，首屏加载极快。
 
-### 2. 娣辫壊涓婚 路 绉戞妧椋?
+### 2. 深色主题 · 科技风
 
-浣跨敤 TailwindCSS v4 鐨?CSS 鍙橀噺绯荤粺锛岄厤鍚?Shadcn UI 缁勪欢搴擄紝瀹炵幇浜嗭細
+使用 TailwindCSS v4 的 CSS 变量系统，配合 Shadcn UI 组件库，实现了：
 
-- 榛樿娣辫壊涓婚锛屾姢鐪间笖閰风偒
-- CSS 鍙橀噺椹卞姩锛屼竴閿垏鎹㈡祬鑹叉ā寮?
-- 鍝佺墝鑹叉笎鍙樼偣缂€锛岀鎶€鎰熷崄瓒?
+- 默认深色主题，护眼且酷炫
+- CSS 变量驱动，一键切换浅色模式
+- 品牌色渐变点缀，科技感十足
 
-### 3. 閮ㄧ讲娴佺▼
+### 3. 部署流程
 
 ```bash
-# 鍐欐枃绔?鈫?鎺ㄩ€?鈫?鑷姩閮ㄧ讲
+# 写文章 → 推送 → 自动部署
 git add src/content/blog/new-post.md
-git commit -m "鏂版枃绔? xxx"
+git commit -m "新文章: xxx"
 git push origin master
-# GitHub Pages 鑷姩鏋勫缓骞堕儴缃?
+# GitHub Pages 自动构建并部署
 ```
 
-## 寮€濮嬪啓浣?
+## 开始写作
 
-鍦?`src/content/blog/` 鐩綍涓嬪垱寤?`.md` 鏂囦欢锛?
+在 `src/content/blog/` 目录下创建 `.md` 文件：
 
 ```markdown
 ---
-title: "浣犵殑鏂囩珷鏍囬"
-excerpt: "鏂囩珷鎽樿"
+title: "你的文章标题"
+excerpt: "文章摘要"
 publishedAt: 2026-06-01
-tags: ["鏍囩1", "鏍囩2"]
+tags: ["标签1", "标签2"]
 ---
 
-鏂囩珷鍐呭...
+文章内容...
 ```
 
-鎺ㄩ€佸悗鍗冲彲鍦ㄩ椤电湅鍒版柊鏂囩珷銆?
+推送后即可在首页看到新文章。
 
 ---
 
-> 杩欐槸绗竴绡囩ず渚嬫枃绔犮€傚悗缁細鍒嗕韩鏇村鍏ㄦ爤寮€鍙戙€佷簯璁＄畻鍜屽畨鍏ㄦ妧鏈浉鍏冲唴瀹广€?
+> 这是第一篇示例文章。后续会分享更多全栈开发、云计算和安全技术相关内容。
