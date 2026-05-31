@@ -1,0 +1,58 @@
+---
+// ─── 文章卡片组件 ───
+import type { CollectionEntry } from 'astro:content';
+import { estimateReadingTime } from '@/lib/utils';
+
+export interface Props {
+  article: CollectionEntry<'blog'>;
+}
+
+const { article } = Astro.props;
+const { title, excerpt, publishedAt, tags } = article.data;
+---
+
+<article class="group rounded-[var(--radius)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 transition-all duration-200 hover:border-[hsl(var(--ring))] hover:shadow-lg hover:shadow-[hsl(var(--primary))/0.05]">
+  <a href={`/blog/${article.slug}`} class="block no-underline">
+    <!-- 标签 -->
+    {tags.length > 0 && (
+      <div class="mb-3 flex flex-wrap gap-1.5">
+        {tags.slice(0, 3).map((tag: string) => (
+          <span class="inline-block rounded-full bg-[hsl(var(--muted))] px-2.5 py-0.5 text-xs font-medium text-[hsl(var(--muted-foreground))] transition-colors group-hover:bg-[hsl(var(--primary))/0.15] group-hover:text-[hsl(var(--primary))]">
+            {tag}
+          </span>
+        ))}
+      </div>
+    )}
+
+    <!-- 标题 -->
+    <h2 class="text-lg font-semibold leading-snug transition-colors group-hover:text-[hsl(var(--primary))]">
+      {title}
+    </h2>
+
+    <!-- 摘要 -->
+    {excerpt && (
+      <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">
+        {excerpt}
+      </p>
+    )}
+
+    <!-- 元信息 -->
+    <div class="mt-4 flex items-center gap-3 text-xs text-[hsl(var(--muted-foreground))]">
+      <time datetime={publishedAt.toISOString()}>
+        {publishedAt.toLocaleDateString('zh-CN', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })}
+      </time>
+      <span>·</span>
+      <span>{estimateReadingTime(article.body ?? '')} 分钟阅读</span>
+    </div>
+  </a>
+</article>
+
+<!-- 阅读时间估算 -->
+{/*
+  中文字符阅读速度约 400 字/分钟
+  英文约 200 词/分钟，混合取 300
+*/}

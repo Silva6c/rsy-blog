@@ -1,0 +1,146 @@
+/* ─── TailwindCSS v4 入口 ─── */
+@import 'tailwindcss';
+
+/* ─── Shadcn UI CSS 变量（现代科技风 · 深色默认） ─── */
+:root {
+  /* 品牌色 — 青色渐变 */
+  --primary: 187 100% 42%;
+  --primary-foreground: 0 0% 100%;
+
+  /* 背景层次 */
+  --background: 222 47% 6%;
+  --background-secondary: 222 47% 9%;
+  --foreground: 210 40% 96%;
+
+  /* 卡片/容器 */
+  --card: 222 47% 10%;
+  --card-foreground: 210 40% 96%;
+  --card-border: 217 33% 17%;
+
+  /* 弹出层 */
+  --popover: 222 47% 8%;
+  --popover-foreground: 210 40% 96%;
+
+  /* 次要文字 */
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 65%;
+
+  /* 强调色 */
+  --accent: 187 100% 42%;
+  --accent-foreground: 0 0% 100%;
+
+  /* 破坏性操作 */
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* 边框 & 输入框 */
+  --border: 217 33% 17%;
+  --input: 217 33% 17%;
+  --ring: 187 100% 42%;
+
+  /* 代码高亮 */
+  --code-bg: 222 47% 12%;
+  --code-fg: 210 40% 96%;
+
+  /* 圆角 */
+  --radius: 0.625rem;
+}
+
+/* 浅色模式覆盖（用户偏好或手动切换） */
+[data-theme='light'] {
+  --background: 0 0% 100%;
+  --background-secondary: 210 20% 98%;
+  --foreground: 222 47% 6%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 6%;
+  --card-border: 214 32% 91%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 6%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --code-bg: 210 20% 98%;
+  --code-fg: 222 47% 6%;
+}
+
+/* ─── Tailwind v4 主题映射 ─── */
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --radius: var(--radius);
+  --font-sans: 'Inter', 'Noto Sans SC', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+}
+
+/* ─── 全局基础样式 ─── */
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 滚动条 — 科技风细条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted));
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+/* 代码块样式 */
+pre {
+  background-color: hsl(var(--code-bg)) !important;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+}
+
+/* 链接 — 品牌色渐变 */
+a {
+  color: hsl(var(--primary));
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+a:hover {
+  opacity: 0.8;
+}
+
+/* 选中文字 */
+::selection {
+  background: hsl(var(--primary) / 0.3);
+  color: hsl(var(--foreground));
+}

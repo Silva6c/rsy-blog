@@ -1,0 +1,78 @@
+---
+// ─── 页头导航 ───
+import ThemeToggle from '@/components/ThemeToggle.tsx';
+
+const NAV_ITEMS = [
+  { href: '/', label: '首页' },
+  { href: '/login', label: '登录' },
+];
+---
+
+<header class="sticky top-0 z-50 border-b border-[hsl(var(--border))] bg-[hsl(var(--background))/0.8] backdrop-blur-xl supports-[backdrop-filter]:bg-[hsl(var(--background))/0.6]">
+  <nav class="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
+    <!-- Logo -->
+    <a
+      href="/"
+      class="text-lg font-bold tracking-tight transition-opacity hover:opacity-80"
+    >
+      <span class="bg-gradient-to-r from-[hsl(var(--primary))] to-cyan-300 bg-clip-text text-transparent">
+        Zero Cost Blog
+      </span>
+    </a>
+
+    <!-- 桌面导航 -->
+    <div class="hidden items-center gap-6 sm:flex">
+      {NAV_ITEMS.map((item) => (
+        <a
+          href={item.href}
+          class="text-sm text-[hsl(var(--muted-foreground))] transition-colors hover:text-[hsl(var(--foreground))]"
+        >
+          {item.label}
+        </a>
+      ))}
+      <ThemeToggle client:load />
+    </div>
+
+    <!-- 移动端 -->
+    <div class="flex items-center gap-2 sm:hidden">
+      <ThemeToggle client:load />
+      <button
+        id="mobile-menu-btn"
+        class="rounded-[var(--radius)] p-2 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] transition-colors"
+        aria-label="打开菜单"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="4" x2="20" y1="12" y2="12" />
+          <line x1="4" x2="20" y1="6" y2="6" />
+          <line x1="4" x2="20" y1="18" y2="18" />
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- 移动端下拉菜单 -->
+  <div
+    id="mobile-menu"
+    class="hidden border-t border-[hsl(var(--border))] px-4 py-3 sm:hidden"
+  >
+    {NAV_ITEMS.map((item) => (
+      <a
+        href={item.href}
+        class="block rounded-[var(--radius)] px-3 py-2 text-sm text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors"
+      >
+        {item.label}
+      </a>
+    ))}
+  </div>
+</header>
+
+<script>
+  // 移动端菜单开关
+  const btn = document.getElementById('mobile-menu-btn');
+  const menu = document.getElementById('mobile-menu');
+  if (btn && menu) {
+    btn.addEventListener('click', () => {
+      menu.classList.toggle('hidden');
+    });
+  }
+</script>

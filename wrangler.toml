@@ -1,0 +1,53 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║         Cloudflare Wrangler 配置文件                         ║
+# ║         用于：部署到 Pages + 绑定 R2 存储桶                  ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# ─── Cloudflare Pages 项目配置 ───
+
+# 项目名称（部署时使用，需与 Cloudflare Pages 上的项目名一致）
+name = "zero-cost-blog"
+
+# Pages 部署输出目录（Astro 构建产物）
+pages_build_output_dir = "dist"
+
+# ─── 兼容性设置 ───
+
+# 使用最新兼容性日期以获得最新功能
+compatibility_date = "2026-05-01"
+
+# ─── R2 存储桶绑定 ───
+# 用于文章图片上传和访问
+# 部署后可通过以下方式访问：
+#   浏览器：https://<bucket-name>.<account-id>.r2.cloudflarestorage.com
+#   公网：   https://pub-<hash>.r2.dev（需在 R2 设置中开启 r2.dev 子域）
+
+# [[r2_buckets]]
+# binding = "BLOG_IMAGES"      # Worker 中的绑定名（仅在 Pages Functions 中使用）
+# bucket_name = "blog-images"  # R2 Bucket 名称
+# preview_bucket_name = "blog-images-preview"  # 预览环境使用的桶
+
+# ─── 环境变量 ───
+# ⚠️ 注意：wrangler.toml 中的变量是公开的
+# 生产环境密钥请使用以下命令设置：
+#   npx wrangler pages secret set PUBLIC_SUPABASE_URL
+#   npx wrangler pages secret set PUBLIC_SUPABASE_ANON_KEY
+#   等等...
+
+# 以下变量在 .env 文件中管理，不在此处明文存储
+# wrangler 会自动读取 .env 中的变量
+
+# ─── 部署命令备忘 ───
+# 首次部署：
+#   npx wrangler pages deploy dist --project-name zero-cost-blog
+#
+# 生产环境设置密钥（每个只需设置一次）：
+#   npx wrangler pages secret set PUBLIC_SUPABASE_URL --project-name zero-cost-blog
+#   npx wrangler pages secret set PUBLIC_SUPABASE_ANON_KEY --project-name zero-cost-blog
+#   npx wrangler pages secret set PUBLIC_GISCUS_REPO --project-name zero-cost-blog
+#   npx wrangler pages secret set PUBLIC_GISCUS_REPO_ID --project-name zero-cost-blog
+#   npx wrangler pages secret set PUBLIC_GISCUS_CATEGORY_ID --project-name zero-cost-blog
+#   npx wrangler pages secret set PUBLIC_R2_PUBLIC_URL --project-name zero-cost-blog
+#
+# 日常部署（Git 推送后自动触发，或手动）：
+#   npm run deploy

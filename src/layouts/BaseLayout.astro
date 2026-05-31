@@ -1,0 +1,81 @@
+---
+// ─── 全局布局组件 ───
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import ThemeToggle from '@/components/ThemeToggle.tsx';
+import '@/styles/globals.css';
+
+export interface Props {
+  /** 页面标题（会追加到站点名后面） */
+  title?: string;
+  /** 页面描述（用于 SEO） */
+  description?: string;
+  /** Open Graph 图片 URL */
+  ogImage?: string;
+  /** 是否显示页脚 */
+  showFooter?: boolean;
+}
+
+const SITE_NAME = 'Zero Cost Blog';
+const SITE_DESCRIPTION = '一个零运行成本的个人技术博客';
+const { title, description, ogImage, showFooter = true } = Astro.props;
+
+const pageTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
+const pageDescription = description ?? SITE_DESCRIPTION;
+---
+
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={pageDescription} />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:type" content={ogImage ? 'article' : 'website'} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta property="og:site_name" content={SITE_NAME} />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+
+    <!-- RSS -->
+    <link rel="alternate" type="application/rss+xml" title={SITE_NAME} href="/rss.xml" />
+
+    <!-- 字体预加载 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>{pageTitle}</title>
+
+    <!-- 主题初始化脚本（防止页面闪烁） -->
+    <script is:inline>
+      (function () {
+        const stored = localStorage.getItem('theme');
+        if (stored) {
+          document.documentElement.setAttribute('data-theme', stored);
+        } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+  </head>
+  <body class="min-h-screen flex flex-col bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+    <Header />
+
+    <!-- 主内容 -->
+    <main class="flex-1 mx-auto w-full max-w-4xl px-4 py-8 sm:py-12">
+      <slot />
+    </main>
+
+    {showFooter && <Footer />}
+  </body>
+</html>

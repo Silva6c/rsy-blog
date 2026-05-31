@@ -1,0 +1,21 @@
+# ─── Cloudflare Pages 安全头配置 ───
+# 部署到 Cloudflare Pages 后自动生效
+# 文档：https://developers.cloudflare.com/pages/configuration/headers/
+
+# 所有 HTML 页面
+/*.html
+  # 防点击劫持
+  X-Frame-Options: DENY
+  # MIME 嗅探保护
+  X-Content-Type-Options: nosniff
+  # 引用策略
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# 静态资源（CSS/JS/图片/字体）
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# RSS 订阅
+/rss.xml
+  Content-Type: application/rss+xml; charset=utf-8
+  Cache-Control: public, max-age=3600

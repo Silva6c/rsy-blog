@@ -1,0 +1,145 @@
+---
+// ─── 文章详情页 ───
+import { type CollectionEntry, getCollection } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import TableOfContents from '@/components/TableOfContents.astro';
+import GiscusComments from '@/components/GiscusComments.tsx';
+import { estimateReadingTime, formatDate } from '@/lib/utils';
+
+// 生成所有静态路径（SSG 模式）
+export async function getStaticPaths() {
+  const articles = await getCollection('blog');
+  return articles
+    .filter((a) => !a.data.draft)
+    .map((a) => ({
+      params: { slug: a.slug },
+      props: { article: a },
+    }));
+}
+
+interface Props {
+  article: CollectionEntry<'blog'>;
+}
+
+const { article } = Astro.props;
+const { title, excerpt, publishedAt, updatedAt, tags, author, coverImage } = article.data;
+
+// 从渲染后的 HTML 提取标题结构
+const { Content, headings } = await article.render();
+
+const readingTime = estimateReadingTime(article.body ?? '');
+const pageDescription = excerpt ?? article.body?.slice(0, 160) ?? '';
+---
+
+<BaseLayout
+  title={title}
+  description={pageDescription}
+  ogImage={coverImage}
+>
+  <!-- 文章头部 -->
+  <header class="mb-8">
+    <!-- 标签 -->
+    {tags.length > 0 && (
+      <div class="mb-4 flex flex-wrap gap-2">
+        {tags.map((tag: string) => (
+          <span class="inline-block rounded-full bg-[hsl(var(--muted))] px-3 py-1 text-xs font-medium text-[hsl(var(--muted-foreground))]">
+            {tag}
+          </span>
+        ))}
+      </div>
+    )}
+
+    <!-- 标题 -->
+    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
+      {title}
+    </h1>
+
+    <!-- 元信息 -->
+    <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-[hsl(var(--muted-foreground))]">
+      <span>{author}</span>
+      <span>·</span>
+      <time datetime={publishedAt.toISOString()}>
+        {formatDate(publishedAt)}
+      </time>
+      {updatedAt && updatedAt > publishedAt && (
+        <>
+          <span>·</span>
+          <span>更新于 {formatDate(updatedAt)}</span>
+        </>
+      )}
+      <span>·</span>
+      <span>{readingTime} 分钟阅读</span>
+    </div>
+
+    <!-- 封面图 -->
+    {coverImage && (
+      <img
+        src={coverImage}
+        alt={title}
+        class="mt-6 w-full rounded-[var(--radius)] border border-[hsl(var(--border))] object-cover max-h-96"
+        loading="eager"
+      />
+    )}
+  </header>
+
+  <!-- 桌面端：侧边目录 + 内容 -->
+  <div class="lg:grid lg:grid-cols-[1fr_200px] lg:gap-8">
+    <!-- 文章正文 -->
+    <article
+      class="prose prose-invert max-w-none
+        prose-headings:scroll-mt-20 prose-headings:text-[hsl(var(--foreground))]
+        prose-h2:mt-10 prose-h2:border-b prose-h2:border-[hsl(var(--border))] prose-h2:pb-2 prose-h2:text-2xl
+        prose-h3:text-xl prose-h3:mt-8
+        prose-p:leading-relaxed
+        prose-a:text-[hsl(var(--primary))] prose-a:no-underline hover:prose-a:opacity-80
+        prose-code:rounded prose-code:bg-[hsl(var(--code-bg))] prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:font-normal
+        prose-pre:border prose-pre:border-[hsl(var(--border))]
+        prose-img:rounded-[var(--radius)] prose-img:border prose-img:border-[hsl(var(--border))]
+        prose-blockquote:border-l-[hsl(var(--primary))] prose-blockquote:bg-[hsl(var(--muted))/0.3] prose-blockquote:py-1 prose-blockquote:pr-4
+        prose-strong:text-[hsl(var(--foreground))]
+        prose-li:marker:text-[hsl(var(--muted-foreground))]
+        prose-hr:border-[hsl(var(--border))]
+      "
+    >
+      <Content />
+    </article>
+
+    <!-- 桌面端侧边栏：目录 -->
+    <aside class="hidden lg:block">
+      <div class="sticky top-24">
+        <TableOfContents headings={headings} />
+      </div>
+    </aside>
+  </div>
+
+  <!-- 移动端目录（折叠在正文下方） -->
+  {
+    headings.filter((h: { depth: number }) => h.depth >= 2 && h.depth <= 3).length > 1 && (
+      <details class="mt-8 lg:hidden">
+        <summary class="cursor-pointer text-sm font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors">
+          目录
+        </summary>
+        <div class="mt-3">
+          <TableOfContents headings={headings} class="border-0 bg-transparent p-0" />
+        </div>
+      </details>
+    )
+  }
+
+  <!-- 文章底部：作者 + 评论 -->
+  <footer class="mt-12 border-t border-[hsl(var(--border))] pt-8">
+    <!-- 作者信息（简易版） -->
+    <div class="flex items-center gap-3 rounded-[var(--radius)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4">
+      <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-sm font-semibold text-[hsl(var(--primary-foreground))]">
+        {author.slice(0, 1).toUpperCase()}
+      </div>
+      <div>
+        <p class="text-sm font-medium">{author}</p>
+        <p class="text-xs text-[hsl(var(--muted-foreground))]">博客作者</p>
+      </div>
+    </div>
+
+    <!-- Giscus 评论区（客户端渲染） -->
+    <GiscusComments client:load />
+  </footer>
+</BaseLayout>

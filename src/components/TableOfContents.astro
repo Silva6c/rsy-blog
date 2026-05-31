@@ -1,0 +1,54 @@
+---
+// ─── 文章目录 (Table of Contents) ───
+// 从文章内容中提取 h2/h3 标题生成页内导航
+
+import { cn } from '@/lib/utils';
+
+export interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+export interface Props {
+  headings: Heading[];
+  class?: string;
+}
+
+const { headings, class: className } = Astro.props;
+
+// 只显示 h2 和 h3
+const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
+---
+
+{
+  filteredHeadings.length > 1 && (
+    <nav
+      class={cn(
+        'rounded-[var(--radius)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4',
+        className,
+      )}
+    >
+      <h2 class="mb-3 text-sm font-semibold text-[hsl(var(--foreground))]">
+        目录
+      </h2>
+      <ul class="space-y-1">
+        {filteredHeadings.map((heading) => (
+          <li>
+            <a
+              href={`#${heading.slug}`}
+              class={cn(
+                'block rounded-sm text-sm transition-colors hover:text-[hsl(var(--primary))]',
+                heading.depth === 2
+                  ? 'pl-0 text-[hsl(var(--muted-foreground))]'
+                  : 'pl-3 text-[hsl(var(--muted-foreground))/0.7] text-xs',
+              )}
+            >
+              {heading.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
