@@ -87,24 +87,17 @@
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 }
 
-/* ─── 基础渐变背景（图片加载前 / 无图片时显示） ─── */
+/* ─── 基础背景（图片加载前显示） ─── */
 body {
   font-family: var(--font-sans);
-  background: linear-gradient(135deg, #0f0b2e 0%, #1a1145 25%, #0d1b3e 50%, #1e1145 75%, #0f0b2e 100%);
-  background-size: 400% 400%;
-  animation: gradient-flow 20s ease infinite;
-  background-attachment: fixed;
+  background-color: #0d0b1a;
   color: hsl(var(--foreground));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* 浅色模式背景 */
 [data-theme='light'] body {
-  background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 30%, #f0f9ff 60%, #f5f3ff 100%);
-  background-size: 400% 400%;
-  animation: none;
-  background-attachment: fixed;
+  background-color: #f5f3fa;
 }
 
 /* ─── 流动渐变关键帧 ─── */

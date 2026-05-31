@@ -51,16 +51,12 @@ export default function BackgroundImage() {
   const overlayStyle =
     theme === 'light'
       ? {
-          // 浅色模式：轻奶白遮罩 + 微模糊，让暗图柔和融入
-          background: 'rgba(255, 255, 255, 0.55)',
-          backdropFilter: 'blur(4px)',
-          WebkitBackdropFilter: 'blur(4px)',
+          // 浅色模式：轻白雾柔化暗图
+          background: 'rgba(255, 255, 255, 0.4)',
         }
       : {
-          // 深色模式：暗紫遮罩保持氛围
-          background: 'rgba(15, 11, 46, 0.35)',
-          backdropFilter: 'blur(2px)',
-          WebkitBackdropFilter: 'blur(2px)',
+          // 深色模式：极轻暗色保持氛围但不遮挡图片
+          background: 'rgba(15, 11, 46, 0.15)',
         };
 
   return (
