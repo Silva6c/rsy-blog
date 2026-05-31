@@ -50,14 +50,14 @@ export default function BackgroundImage() {
     }
   }, [theme]);
 
-  // 定时切换
+  // 定时切换（依赖 theme 确保切换主题时重建定时器）
   useEffect(() => {
     if (INTERVAL <= 0 || images.length <= 1) return;
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % images.length);
     }, INTERVAL);
     return () => clearInterval(timer);
-  }, [images.length]);
+  }, [images.length, theme]);
 
   return (
     <div className="fixed inset-0 z-[-3] overflow-hidden pointer-events-none">
