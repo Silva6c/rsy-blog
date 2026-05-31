@@ -87,9 +87,10 @@
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 }
 
-/* ─── 流动渐变背景（深色模式） ─── */
+/* ─── 流动渐变背景 + 装饰光球 + 噪点纹理（深色模式） ─── */
 body {
   font-family: var(--font-sans);
+  /* 基础渐变 */
   background: linear-gradient(135deg, #0f0b2e 0%, #1a1145 25%, #0d1b3e 50%, #1e1145 75%, #0f0b2e 100%);
   background-size: 400% 400%;
   animation: gradient-flow 20s ease infinite;
@@ -97,9 +98,45 @@ body {
   color: hsl(var(--foreground));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  position: relative;
+  isolation: isolate;
 }
 
-/* 浅色模式背景 — 柔光静态渐变 */
+/* 装饰光球 — 大尺寸模糊彩色光斑 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  /* 三个光球叠加 */
+  background:
+    /* 左上 indigo 光 */
+    radial-gradient(ellipse 600px 500px at 15% 20%, rgba(99, 102, 241, 0.12) 0%, transparent 70%),
+    /* 右上 purple 光 */
+    radial-gradient(ellipse 500px 450px at 80% 10%, rgba(168, 85, 247, 0.10) 0%, transparent 70%),
+    /* 右下 cyan 光 */
+    radial-gradient(ellipse 550px 480px at 70% 80%, rgba(6, 182, 212, 0.08) 0%, transparent 70%),
+    /* 左下粉色光 */
+    radial-gradient(ellipse 400px 400px at 25% 70%, rgba(236, 72, 153, 0.06) 0%, transparent 70%);
+  background-size: 100% 100%;
+  animation: orb-drift 30s ease-in-out infinite;
+}
+
+/* 噪点纹理遮罩 */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* 浅色模式背景 — 柔光静态渐变 + 光球 */
 [data-theme='light'] body {
   background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 30%, #f0f9ff 60%, #f5f3ff 100%);
   background-size: 400% 400%;
@@ -107,11 +144,32 @@ body {
   background-attachment: fixed;
 }
 
+[data-theme='light'] body::before {
+  background:
+    radial-gradient(ellipse 600px 500px at 15% 20%, rgba(99, 102, 241, 0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 500px 450px at 80% 10%, rgba(168, 85, 247, 0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 550px 480px at 70% 80%, rgba(6, 182, 212, 0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 400px 400px at 25% 70%, rgba(236, 72, 153, 0.03) 0%, transparent 70%);
+}
+
+[data-theme='light'] body::after {
+  opacity: 0.02;
+}
+
 /* ─── 流动渐变关键帧 ─── */
 @keyframes gradient-flow {
   0%   { background-position: 0% 50%; }
   50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
+}
+
+/* 光球缓慢漂移动画 */
+@keyframes orb-drift {
+  0%   { transform: translate(0, 0) scale(1); }
+  25%  { transform: translate(30px, -20px) scale(1.05); }
+  50%  { transform: translate(-10px, 25px) scale(0.97); }
+  75%  { transform: translate(-25px, -10px) scale(1.03); }
+  100% { transform: translate(0, 0) scale(1); }
 }
 
 /* ─── 果冻弹跳动画 ─── */
