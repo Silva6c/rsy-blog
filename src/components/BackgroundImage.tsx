@@ -1,6 +1,5 @@
 // ─── 全屏背景图片层 ───
 // 背景图片存放在 public/images/backgrounds/
-// 替换图片：替换该目录下的 jpg 文件即可
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,6 +18,18 @@ const INTERVAL = 30000;
 export default function BackgroundImage() {
   const [current, setCurrent] = useState(0);
   const [loaded, setLoaded] = useState<Set<number>>(new Set([0]));
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+
+  // 监听主题切换
+  useEffect(() => {
+    const el = document.documentElement;
+    const update = () =>
+      setTheme(el.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(el, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     IMAGES.forEach((url, i) => {
@@ -36,6 +47,21 @@ export default function BackgroundImage() {
     }, INTERVAL);
     return () => clearInterval(timer);
   }, []);
+
+  const overlayStyle =
+    theme === 'light'
+      ? {
+          // 浅色模式：轻奶白遮罩 + 微模糊，让暗图柔和融入
+          background: 'rgba(255, 255, 255, 0.55)',
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
+        }
+      : {
+          // 深色模式：暗紫遮罩保持氛围
+          background: 'rgba(15, 11, 46, 0.35)',
+          backdropFilter: 'blur(2px)',
+          WebkitBackdropFilter: 'blur(2px)',
+        };
 
   return (
     <div className="fixed inset-0 z-[-3] overflow-hidden pointer-events-none">
@@ -56,15 +82,8 @@ export default function BackgroundImage() {
         />
       </AnimatePresence>
 
-      {/* 只用一层轻遮罩保证文字可读，图片主体清晰可见 */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: 'rgba(15, 11, 46, 0.35)',
-          backdropFilter: 'blur(2px)',
-          WebkitBackdropFilter: 'blur(2px)',
-        }}
-      />
+      {/* 主题感知遮罩 */}
+      <div className="absolute inset-0" style={overlayStyle} />
     </div>
   );
 }
