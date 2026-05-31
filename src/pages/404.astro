@@ -1,0 +1,20 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="404 — 页面未找到" description="你寻找的页面不存在">
+  <div class="flex flex-col items-center justify-center py-20 text-center">
+    <span class="text-8xl font-bold bg-gradient-to-r from-[hsl(var(--primary))] to-cyan-300 bg-clip-text text-transparent">
+      404
+    </span>
+    <p class="mt-6 text-lg text-[hsl(var(--muted-foreground))]">
+      这个页面不存在，或者已经被移走了
+    </p>
+    <a
+      href="/"
+      class="mt-8 inline-flex items-center gap-2 rounded-[var(--radius)] bg-[hsl(var(--primary))] px-6 py-3 text-sm font-medium text-[hsl(var(--primary-foreground))] transition-opacity hover:opacity-90"
+    >
+      返回首页
+    </a>
+  </div>
+</BaseLayout>

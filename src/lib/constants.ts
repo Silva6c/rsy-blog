@@ -1,14 +1,14 @@
 // ─── 站点常量（从环境变量或默认值读取） ───
 
 /** 站点名称 */
-export const SITE_NAME = 'Zero Cost Blog';
+export const SITE_NAME = "RSY's 1st BLOG";
 
 /** 站点描述 */
-export const SITE_DESCRIPTION = '一个零运行成本的个人技术博客';
+export const SITE_DESCRIPTION = "RSY 的个人技术博客 — 记录学习、思考与创造";
 
-/** 站点 URL（部署后替换为实际域名） */
+/** 站点 URL */
 export const SITE_URL = import.meta.env.PROD
-  ? 'https://YOUR-DOMAIN.pages.dev'
+  ? 'https://silva6c.github.io'
   : 'http://localhost:4321';
 
 // ─── Supabase（客户端安全变量） ───

@@ -16,8 +16,8 @@ export interface Props {
   showFooter?: boolean;
 }
 
-const SITE_NAME = 'Zero Cost Blog';
-const SITE_DESCRIPTION = '一个零运行成本的个人技术博客';
+const SITE_NAME = "RSY's 1st BLOG";
+const SITE_DESCRIPTION = "RSY 的个人技术博客 — 记录学习、思考与创造";
 const { title, description, ogImage, showFooter = true } = Astro.props;
 
 const pageTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
