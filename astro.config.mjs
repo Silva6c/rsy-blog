@@ -6,7 +6,7 @@ import path from 'path';
 
 export default defineConfig({
   site: 'https://silva6c.github.io',
-  base: '/CLAUDE_TEST/',
+  base: '/rsy-blog/',
   output: 'static',
 
   integrations: [react()],
