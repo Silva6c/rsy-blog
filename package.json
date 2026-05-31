@@ -6,10 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
-    "deploy": "astro build && wrangler pages deploy dist --project-name rsy",
-    "deploy:preview": "astro build && wrangler pages deploy dist --project-name rsy --branch preview",
-    "cf-build": "npm install && npm run build"
+    "preview": "astro preview"
   },
   "dependencies": {
     "@astrojs/react": "^4.2.0",
@@ -29,7 +26,6 @@
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "drizzle-kit": "^0.31.10",
-    "typescript": "^5.8.0",
-    "wrangler": "^4.10.0"
+    "typescript": "^5.8.0"
   }
 }

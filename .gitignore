@@ -28,3 +28,7 @@ desktop.ini
 # ─── Claude Code ───
 .claude/
 CLAUDE.md
+
+.dev.vars*
+!.dev.vars.example
+!.env.example
