@@ -1,57 +1,12 @@
 ---
-// ─── 首页 — 入口导航（毛玻璃风格） ───
+// ─── 首页 — 3D 大片质感 ───
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import { BASE, SITE_NAME } from '@/lib/constants';
-
-const SECTIONS = [
-  { href: `${BASE}blog`, icon: '📝', label: '文章', desc: '技术笔记与思考' },
-  { href: `${BASE}projects`, icon: '🚀', label: '项目', desc: '个人开源作品' },
-  { href: `${BASE}timeline`, icon: '⏳', label: '归档', desc: '时间轴浏览' },
-  { href: `${BASE}friends`, icon: '🔗', label: '友链', desc: '友情链接' },
-  { href: `${BASE}about`, icon: '👤', label: '关于', desc: '关于我和本站' },
-];
+import HeroScene from '@/components/HeroScene.tsx';
 ---
 
 <BaseLayout
   title="首页"
-  description="一个零运行成本的个人技术博客 — 记录学习、思考与创造"
+  description="RSY 的个人技术博客 — 记录学习、思考与创造"
 >
-  <!-- Hero -->
-  <section class="mb-12 text-center">
-    <h1 class="text-4xl font-bold tracking-tight sm:text-5xl" style="font-family: 'Noto Serif SC', serif;">
-      <span class="text-gradient-brand">
-        {SITE_NAME}
-      </span>
-    </h1>
-    <p class="mt-4 text-lg text-[hsl(var(--muted-foreground))]">
-      记录学习、思考与创造
-    </p>
-  </section>
-
-  <!-- 入口导航卡片 -->
-  <section class="mx-auto max-w-lg">
-    <div class="grid gap-3">
-      {SECTIONS.map((s) => (
-        <a
-          href={s.href}
-          class="glass-card group flex items-center gap-4 p-4 no-underline"
-        >
-          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--primary))/0.12] text-xl transition-transform group-hover:scale-110">
-            {s.icon}
-          </span>
-          <div class="min-w-0">
-            <h2 class="font-medium text-[hsl(var(--foreground))] transition-colors group-hover:text-[hsl(var(--primary))]">
-              {s.label}
-            </h2>
-            <p class="text-sm text-[hsl(var(--muted-foreground))]">
-              {s.desc}
-            </p>
-          </div>
-          <svg class="ml-auto h-4 w-4 shrink-0 text-[hsl(var(--muted-foreground))] transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="m9 18 6-6-6-6"/>
-          </svg>
-        </a>
-      ))}
-    </div>
-  </section>
+  <HeroScene client:load />
 </BaseLayout>
