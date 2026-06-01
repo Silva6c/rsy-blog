@@ -1,13 +1,22 @@
-// ─── 水族馆水壁 — 刚体水面倾斜 + 折射扭曲 ───
-// 水面是一条笔直的线，但可以倾斜和上下平移
-// 鼠标划过 → 水面倾角改变 → 水体内部折射扭曲
+// ─── 水族馆水壁 — 三维波场 + 法线折射 ───
+// h(x,z) 高度场：X=屏幕宽 Z=纵深。波在X-Z面传播。
+// 折射由 ∂h/∂x 和 ∂h/∂z 共同决定。
 
 import { useEffect, useRef } from 'react';
 
-const STIFFNESS = 8;          // 弹簧刚度
-const DAMPING = 3.5;          // 弹簧阻尼
-const MAX_TILT = 0.4;         // 最大倾角 (rad)
-const REFRACT = 0.028;        // 折射强度
+/* ── 波场参数 ── */
+const WX = 200;               // X 方向采样数
+const WZ = 40;                // Z 方向采样数
+const WAVE_C = 0.15;          // 波速
+const DAMPING = 0.98;         // 阻尼
+
+/* ── 折射参数 ── */
+const REFRACT_X = 2.2;        // X梯度→水平偏移系数
+const REFRACT_Z = 0.8;        // Z梯度→垂直偏移系数
+
+/* ── 弹簧参数（整体倾斜） ── */
+const TILT_K = 8;
+const TILT_D = 3.5;
 
 export default function WaterPool() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -18,19 +27,25 @@ export default function WaterPool() {
     const ctx = canvas.getContext('2d')!;
     let w = 0, h = 0, animId = 0;
 
-    // 离屏背景
+    /* ── 离屏背景 ── */
     const offscreen = document.createElement('canvas');
     const octx = offscreen.getContext('2d')!;
 
-    // ─── 刚体水面状态 ───
-    let tiltAngle = 0;        // 水面倾角 (rad)
-    let offsetY = 0;          // 水面中点垂直位移 (px)
-    let tiltVel = 0;          // 倾角速度
-    let offsetVel = 0;        // 位移速度
-    let targetTilt = 0;       // 目标倾角
-    let targetOffset = 0;     // 目标位移
+    /* ── 三维波场 (WX+1) × (WZ+1) ── */
+    const NX = WX + 1, NZ = WZ + 1;
+    let h0 = new Float32Array(NX * NZ);
+    let h1 = new Float32Array(NX * NZ);
+    let h2 = new Float32Array(NX * NZ);
+
+    /* ── Z 倾斜状态 ── */
+    let zTilt = 0;            // 当前Z倾角
+    let zTiltVel = 0;
+    let zTiltTarget = 0;
     let lastMX = 0, lastMY = 0, lastT = performance.now();
 
+    const clamp = (v: number, lo: number, hi: number) => v < lo ? lo : v > hi ? hi : v;
+
+    /* ── 尺寸 ── */
     const resize = () => {
       w = canvas.width = window.innerWidth;
       h = canvas.height = window.innerHeight;
@@ -40,93 +55,142 @@ export default function WaterPool() {
     resize();
     window.addEventListener('resize', resize);
 
-    // ─── 背景 ───
+    /* ── 画背景 ── */
     const drawBg = () => {
       octx.fillStyle = '#ffffff';
       octx.fillRect(0, 0, w, h);
+      // 装饰光斑
       octx.fillStyle = 'rgba(0,0,0,0.03)';
       octx.beginPath(); octx.arc(w * 0.3, h * 0.3, 200, 0, Math.PI * 2); octx.fill();
       octx.fillStyle = 'rgba(0,0,0,0.02)';
       octx.beginPath(); octx.arc(w * 0.7, h * 0.5, 180, 0, Math.PI * 2); octx.fill();
+      // 标题 — 在水面区域
       octx.fillStyle = '#111111';
       octx.font = `bold ${Math.min(w * 0.08, 80)}px "Noto Serif SC", serif`;
       octx.textAlign = 'center';
-      octx.fillText("RSY's 1st BLOG", w / 2, h * 0.35);
-      octx.fillStyle = 'rgba(0,0,0,0.4)';
+      octx.fillText("RSY's 1st BLOG", w / 2, h * 0.55);
+      octx.fillStyle = 'rgba(0,0,0,0.35)';
       octx.font = `${Math.min(w * 0.025, 24)}px "Inter","Noto Sans SC",sans-serif`;
-      octx.fillText('记录 · 思考 · 创造', w / 2, h * 0.35 + 50);
+      octx.fillText('记录 · 思考 · 创造', w / 2, h * 0.55 + 50);
       octx.textAlign = 'start';
     };
     drawBg();
     window.addEventListener('resize', drawBg);
 
-    // ─── 鼠标 → 目标倾角/位移 ───
+    /* ── 鼠标 → 涟漪 + Z倾斜 ── */
     const onMouse = (mx: number, my: number) => {
       const now = performance.now();
       const dt = Math.min((now - lastT) / 1000, 0.1);
       if (dt <= 0) { lastT = now; lastMX = mx; lastMY = my; return; }
       const vx = (mx - lastMX) / dt;
       const vy = (my - lastMY) / dt;
-      // 水平速度 → 水面倾斜, 垂直速度 → 水面升降
-      targetTilt = THREE.MathUtils?.clamp(vx * 0.002, -MAX_TILT, MAX_TILT) ?? Math.max(-MAX_TILT, Math.min(MAX_TILT, vx * 0.002));
-      targetOffset = Math.max(-30, Math.min(30, vy * -0.15));
       lastMX = mx; lastMY = my; lastT = now;
+
+      // Z倾斜目标（垂直速度）
+      zTiltTarget = clamp(vy * -0.08, -40, 40);
+
+      // 涟漪 — 在波场中注入脉冲
+      const ix = Math.round((mx / w) * WX);
+      const iz = 2 + Math.floor(Math.random() * (WZ - 4)); // 近前壁处
+      const impulse = 0.6;
+      const spread = 6;
+      for (let di = -spread; di <= spread; di++) {
+        for (let dj = -spread; dj <= spread; dj++) {
+          const ni = ix + di, nj = iz + dj;
+          if (ni >= 0 && ni < NX && nj >= 0 && nj < NZ) {
+            const d2 = di * di + dj * dj;
+            h1[ni * NZ + nj] += impulse * Math.exp(-d2 / 10);
+          }
+        }
+      }
     };
-    // clamp helper (no THREE import)
-    const clamp = (v: number, lo: number, hi: number) => v < lo ? lo : v > hi ? hi : v;
     const onMM = (e: MouseEvent) => onMouse(e.clientX, e.clientY);
     const onTouch = (e: TouchEvent) => { if (e.touches.length > 0) onMouse(e.touches[0].clientX, e.touches[0].clientY); };
     window.addEventListener('mousemove', onMM);
     window.addEventListener('touchmove', onTouch);
 
-    const waterlineBase = () => h * 0.45;
+    /* ── 水面基准线 ── */
+    const waterlineY = () => h * 0.45;
 
-    // ─── 渲染 ───
+    /* ── 渲染 ── */
     const render = () => {
       animId = requestAnimationFrame(render);
-
       const now = performance.now();
       const dt = Math.min((now - lastT) / 1000, 0.05);
       lastT = now;
 
-      // 弹簧物理：倾角
-      tiltVel += (targetTilt - tiltAngle) * STIFFNESS * dt - tiltVel * DAMPING * dt;
-      tiltAngle += tiltVel * dt;
-      // 弹簧物理：位移
-      offsetVel += (targetOffset - offsetY) * STIFFNESS * 0.8 * dt - offsetVel * DAMPING * 0.8 * dt;
-      offsetY += offsetVel * dt;
-      // 目标衰减
-      targetTilt *= 0.95;
-      targetOffset *= 0.95;
+      // 1. 二维波方程时间步
+      const c = WAVE_C;
+      for (let i = 1; i < NX - 1; i++) {
+        for (let j = 1; j < NZ - 1; j++) {
+          const idx = i * NZ + j;
+          const lap = h1[idx - NZ] + h1[idx + NZ] + h1[idx - 1] + h1[idx + 1] - 4 * h1[idx];
+          h2[idx] = (2 * h1[idx] - h0[idx] + c * lap) * DAMPING;
+        }
+      }
 
-      const baseY = waterlineBase() + offsetY;
+      // 2. 更新Z倾斜
+      zTiltVel += (zTiltTarget - zTilt) * TILT_K * dt - zTiltVel * TILT_D * dt;
+      zTilt += zTiltVel * dt;
+      zTiltTarget *= 0.95;
 
-      // 上半屏：直接拷贝背景
+      // 随机微扰
+      if (Math.random() < 0.03) {
+        const ri = 1 + Math.floor(Math.random() * (NX - 2));
+        const rj = 1 + Math.floor(Math.random() * (NZ - 2));
+        for (let di = -2; di <= 2; di++)
+          for (let dj = -2; dj <= 2; dj++) {
+            const ni = ri + di, nj = rj + dj;
+            if (ni >= 0 && ni < NX && nj >= 0 && nj < NZ)
+              h1[ni * NZ + nj] += 0.03 * Math.exp(-(di * di + dj * dj) / 3);
+          }
+      }
+
+      // 3. 画上半屏（直接拷贝）
       ctx.drawImage(offscreen, 0, 0);
 
-      // 下半屏折射区域
-      const topY = Math.floor(baseY) - 5;
+      // 4. 下半屏折射区域
+      const wlBase = waterlineY();
+      const topY = Math.floor(wlBase) - 8;
       const regionH = h - topY;
-      if (regionH <= 0) return;
+      if (regionH <= 0) { [h0, h1, h2] = [h1, h2, h0]; h2.fill(0); return; }
 
       const imageData = ctx.getImageData(0, topY, w, regionH);
       const src = octx.getImageData(0, topY, w, regionH);
       const data = imageData.data;
       const sdata = src.data;
-      const iw = imageData.width;
-      const ih = imageData.height;
+      const iw_px = imageData.width;
+      const ih_px = imageData.height;
 
-      for (let py = 0; py < ih; py++) {
-        const depth = py / ih;
-        const decay = Math.exp(-depth * 2.2);
-        // 折射偏移 = 倾角驱动 + 深度衰减
-        const offX = tiltAngle * 250 * decay * REFRACT * w;
+      for (let py = 0; py < ih_px; py++) {
+        // 当前像素对应的波场索引
+        const screenY = topY + py;
+        // Z坐标：距水面线越远 = 水体越深 = Z值越大
+        const zFrac = clamp((screenY - wlBase) / (h - wlBase), 0, 1);
+        const jCell = Math.round(zFrac * WZ);
 
-        for (let px = 0; px < iw; px++) {
+        for (let px = 0; px < iw_px; px++) {
+          const iCell = Math.round((px / iw_px) * WX);
+          const idx = clamp(iCell, 0, NX - 1) * NZ + clamp(jCell, 0, NZ - 1);
+
+          // 梯度 → 法线
+          const dx = iCell > 0 && iCell < NX - 1 ? (h1[(iCell + 1) * NZ + jCell] - h1[(iCell - 1) * NZ + jCell]) : 0;
+          const dz = jCell > 0 && jCell < NZ - 1 ? (h1[iCell * NZ + jCell + 1] - h1[iCell * NZ + jCell - 1]) : 0;
+
+          // Z倾斜叠加到Z梯度
+          const effectiveDz = dz + zTilt * 0.005 * zFrac;
+
+          // 折射偏移
+          const offX = dx * REFRACT_X * w * 0.005;
+          const offY = effectiveDz * REFRACT_Z * 1.5;
+
           const sx = Math.round(px + offX);
-          const cx = clamp(sx, 0, iw - 1);
-          const si = (py * iw + cx) * 4;
-          const di = (py * iw + px) * 4;
+          const sy = Math.round(py + offY);
+          const csx = clamp(sx, 0, iw_px - 1);
+          const csy = clamp(sy, 0, ih_px - 1);
+
+          const si = (csy * iw_px + csx) * 4;
+          const di = (py * iw_px + px) * 4;
           data[di] = sdata[si];
           data[di + 1] = sdata[si + 1];
           data[di + 2] = sdata[si + 2];
@@ -135,31 +199,40 @@ export default function WaterPool() {
       }
       ctx.putImageData(imageData, 0, topY);
 
-      // 蓝色水体
-      ctx.fillStyle = 'rgba(150,200,235,0.28)';
-      ctx.fillRect(0, baseY, w, h - baseY);
+      // 5. 淡蓝色水体覆盖
+      ctx.fillStyle = 'rgba(150,200,235,0.16)';
+      ctx.fillRect(0, wlBase, w, h - wlBase);
 
-      // 水面线 — 笔直 + 倾斜
-      const leftY = baseY - tiltAngle * w / 2;
-      const rightY = baseY + tiltAngle * w / 2;
-      ctx.strokeStyle = 'rgba(0,0,0,0.3)';
-      ctx.lineWidth = 1.5;
+      // 6. 水面线 h(x, z=0)
+      const segW = w / WX;
       ctx.beginPath();
-      ctx.moveTo(0, leftY);
-      ctx.lineTo(w, rightY);
+      for (let i = 0; i <= WX; i++) {
+        const x = i * segW;
+        const waveH = h2[i * NZ + 0];   // z=0 前壁处
+        const y = wlBase + waveH * 30;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = 'rgba(0,0,0,0.28)';
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      // 水面微光晕
-      const glowGrad = ctx.createLinearGradient(0, baseY - 5, 0, baseY + 5);
+      // 水面微光
+      const glowGrad = ctx.createLinearGradient(0, wlBase - 4, 0, wlBase + 4);
       glowGrad.addColorStop(0, 'rgba(200,220,255,0)');
       glowGrad.addColorStop(0.5, 'rgba(200,220,255,0.10)');
       glowGrad.addColorStop(1, 'rgba(200,220,255,0)');
       ctx.fillStyle = glowGrad;
-      ctx.fillRect(0, baseY - 5, w, 10);
+      ctx.fillRect(0, wlBase - 4, w, 8);
+
+      // 缓冲区轮转
+      [h0, h1, h2] = [h1, h2, h0];
+      h2.fill(0);
     };
 
     render();
 
+    /* ── IntersectionObserver ── */
     const observer = new IntersectionObserver(
       ([e]) => {
         if (!e.isIntersecting) cancelAnimationFrame(animId);
