@@ -213,8 +213,8 @@ export default function WaterPool() {
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
-      ctx.strokeStyle = 'rgba(0,0,0,0.28)';
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+      ctx.lineWidth = 2.5;
       ctx.stroke();
 
       // 水面微光
