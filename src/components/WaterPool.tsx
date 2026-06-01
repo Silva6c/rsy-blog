@@ -89,20 +89,24 @@ export default function WaterPool() {
       const vy = (my - lastMY) / dt;
       lastMX = mx; lastMY = my; lastT = now;
 
-      // Z倾斜目标（垂直速度）
-      zTiltTarget = clamp(vy * -0.08, -40, 40);
+      // 只有鼠标在水中时（水面以下）才产生涟漪
+      if (my > waterlineY()) {
+        // Z倾斜目标（垂直速度）
+        zTiltTarget = clamp(vy * -0.08, -40, 40);
 
-      // 涟漪 — 在波场中注入脉冲
-      const ix = Math.round((mx / w) * WX);
-      const iz = 2 + Math.floor(Math.random() * (WZ - 4)); // 近前壁处
-      const impulse = 0.6;
-      const spread = 6;
-      for (let di = -spread; di <= spread; di++) {
-        for (let dj = -spread; dj <= spread; dj++) {
-          const ni = ix + di, nj = iz + dj;
-          if (ni >= 0 && ni < NX && nj >= 0 && nj < NZ) {
-            const d2 = di * di + dj * dj;
-            h1[ni * NZ + nj] += impulse * Math.exp(-d2 / 10);
+        // 涟漪 — 注入脉冲到鼠标对应深度
+        const ix = Math.round((mx / w) * WX);
+        const depthFrac = clamp((my - waterlineY()) / (h - waterlineY()), 0, 1);
+        const iz = Math.round(depthFrac * (NZ - 1));
+        const impulse = 0.6 * (0.3 + depthFrac * 0.7); // 越深越强
+        const spread = 6;
+        for (let di = -spread; di <= spread; di++) {
+          for (let dj = -spread; dj <= spread; dj++) {
+            const ni = ix + di, nj = iz + dj;
+            if (ni >= 0 && ni < NX && nj >= 0 && nj < NZ) {
+              const d2 = di * di + dj * dj;
+              h1[ni * NZ + nj] += impulse * Math.exp(-d2 / 10);
+            }
           }
         }
       }
@@ -202,8 +206,13 @@ export default function WaterPool() {
       }
       ctx.putImageData(imageData, 0, topY);
 
-      // 5. 淡蓝色水体覆盖
-      ctx.fillStyle = 'rgba(150,200,235,0.16)';
+      // 5. 蓝色水体渐变覆盖（表面淡，底部深）
+      const waterGrad = ctx.createLinearGradient(0, wlBase, 0, h);
+      waterGrad.addColorStop(0, 'rgba(160,210,240,0.08)');
+      waterGrad.addColorStop(0.3, 'rgba(130,190,230,0.18)');
+      waterGrad.addColorStop(0.7, 'rgba(80,140,210,0.28)');
+      waterGrad.addColorStop(1, 'rgba(40,80,160,0.40)');
+      ctx.fillStyle = waterGrad;
       ctx.fillRect(0, wlBase, w, h - wlBase);
 
       // 6. 水面线 h(x, z=0)
