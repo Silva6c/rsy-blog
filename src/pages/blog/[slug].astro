@@ -4,7 +4,6 @@ import { type CollectionEntry, getCollection } from 'astro:content';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import TableOfContents from '@/components/TableOfContents.astro';
 import GiscusComments from '@/components/GiscusComments.tsx';
-import ReadingProgress from '@/components/ReadingProgress.tsx';
 import CodeCopyButton from '@/components/CodeCopyButton.tsx';
 import { estimateReadingTime, formatDate } from '@/lib/utils';
 
@@ -37,8 +36,7 @@ const pageDescription = excerpt ?? article.body?.slice(0, 160) ?? '';
   description={pageDescription}
   ogImage={coverImage}
 >
-  <!-- 阅读进度条 + 代码复制按钮 -->
-  <ReadingProgress client:load />
+  <!-- 代码复制按钮 -->
   <CodeCopyButton client:load />
 
   <!-- 文章头部 -->
