@@ -99,12 +99,18 @@ export default function WaterPool() {
     window.addEventListener('resize', drawBg);
     const themeObs = new MutationObserver(() => { const t = theme(); if (t !== curTheme) { curTheme = t; drawBg(); } });
     themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-    const bgTimer = setInterval(() => {
-      // 保存当前画面到 prevCanvas
-      prevCanvas.width = w; prevCanvas.height = h;
-      pctx.drawImage(offscreen, 0, 0);
-      bgIdx++; fadeT = 0; // 开始渐变
-    }, 15000);
+    let bgTimer: ReturnType<typeof setInterval>;
+    const scheduleNextBg = () => {
+      clearInterval(bgTimer);
+      const isMeteor = bgIdx % 6 === METEOR_IMG_IDX;
+      bgTimer = setInterval(() => {
+        prevCanvas.width = w; prevCanvas.height = h;
+        pctx.drawImage(offscreen, 0, 0);
+        bgIdx++; fadeT = 0;
+        scheduleNextBg(); // 根据新图片重新设定间隔
+      }, isMeteor ? 30000 : 15000);
+    };
+    scheduleNextBg();
 
     /* ── 鼠标 ── */
     const wlY = () => h * 0.45;
