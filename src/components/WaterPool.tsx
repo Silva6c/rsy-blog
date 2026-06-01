@@ -125,24 +125,24 @@ export default function WaterPool() {
     window.addEventListener('touchmove', onTouch);
 
     /* ── 彩蛋状态 ── */
-    // ① 水面线7连击
+    // ① 水面线7连击 — 监听window因为canvas在z-3收不到事件
     let clickCount = 0, clickTimer = 0;
-    const onCanvasClick = (e: MouseEvent) => {
+    const onWindowClick = (e: MouseEvent) => {
       const wy = wlY() + waterlineAt(state, Math.round((e.clientX / w) * WX)) * 12;
-      if (Math.abs(e.clientY - wy) < 25) {
+      if (Math.abs(e.clientY - wy) < 30) {
         clickCount++;
         clearTimeout(clickTimer);
         clickTimer = window.setTimeout(() => { clickCount = 0; }, 2000);
         if (clickCount >= 7) { clickCount = 0; triggerRage(); }
       }
     };
-    canvas.addEventListener('click', onCanvasClick);
+    window.addEventListener('click', onWindowClick);
 
-    // ② Konami Code
-    const konami = [38,38,40,40,37,39,37,39,66,65];
+    // ② Konami Code — 用 e.key 而非废弃的 keyCode
+    const konamiKeys = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
     let konamiIdx = 0;
     const onKey = (e: KeyboardEvent) => {
-      if (e.keyCode === konami[konamiIdx]) { konamiIdx++; if (konamiIdx === konami.length) { konamiIdx = 0; triggerKonami(); } }
+      if (e.key === konamiKeys[konamiIdx]) { konamiIdx++; if (konamiIdx === konamiKeys.length) { konamiIdx = 0; triggerKonami(); } }
       else { konamiIdx = 0; }
     };
     window.addEventListener('keydown', onKey);
@@ -153,7 +153,7 @@ export default function WaterPool() {
       if (e.clientY < wlY()) return;
       fishX = e.clientX; fishY = e.clientY; fishAlpha = 1; fishDir = Math.random() > 0.5 ? 1 : -1;
     };
-    canvas.addEventListener('dblclick', onDblClick);
+    window.addEventListener('dblclick', onDblClick);
 
     // 彩蛋触发
     let rageEnd = 0;
@@ -301,8 +301,8 @@ export default function WaterPool() {
       window.removeEventListener('mousemove', onMM); window.removeEventListener('touchmove', onTouch);
       window.removeEventListener('deviceorientation', onGyro);
       window.removeEventListener('keydown', onKey);
-      canvas.removeEventListener('click', onCanvasClick);
-      canvas.removeEventListener('dblclick', onDblClick);
+      window.removeEventListener('click', onWindowClick);
+      window.removeEventListener('dblclick', onDblClick);
       window.removeEventListener('resize', resize); window.removeEventListener('resize', drawBg);
     };
   }, []);
