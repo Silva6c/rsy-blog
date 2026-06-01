@@ -159,11 +159,12 @@ export default function WaterPool() {
     };
     window.addEventListener('mousemove', onMouse);
     // 触摸支持
-    window.addEventListener('touchmove', (e: TouchEvent) => {
+    const onTouch = (e: TouchEvent) => {
       if (e.touches.length > 0) {
         onMouse({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY } as MouseEvent);
       }
-    });
+    };
+    window.addEventListener('touchmove', onTouch);
 
     // ─── 动画循环 ───
     let animId = 0, lastT = performance.now();
@@ -239,6 +240,7 @@ export default function WaterPool() {
       cancelAnimationFrame(animId);
       observer.disconnect();
       window.removeEventListener('mousemove', onMouse);
+      window.removeEventListener('touchmove', onTouch);
       window.removeEventListener('resize', resize);
       renderer.dispose();
       geom.dispose(); mat.dispose();
