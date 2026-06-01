@@ -7,6 +7,7 @@ import BackToTop from '@/components/BackToTop.tsx';
 import WelcomeScreen from '@/components/WelcomeScreen.tsx';
 import BackgroundImage from '@/components/BackgroundImage.tsx';
 import ReadingProgress from '@/components/ReadingProgress.tsx';
+import CursorGlow from '@/components/CursorGlow.tsx';
 import '@/styles/globals.css';
 import { BASE, SITE_NAME, SITE_DESCRIPTION } from '@/lib/constants';
 
@@ -79,6 +80,9 @@ const pageDescription = description ?? SITE_DESCRIPTION;
 
     <!-- 全局阅读进度条 -->
     <ReadingProgress client:load />
+
+    <!-- 光标光晕（桌面端） -->
+    <CursorGlow client:load />
 
     <Header />
 

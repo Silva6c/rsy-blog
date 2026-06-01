@@ -23,13 +23,21 @@ export default function ReadingProgress() {
   return (
     <div className="fixed top-0 left-0 right-0 z-[60] h-[2px]">
       <div
-        className="h-full rounded-r-sm transition-[width] duration-150 ease-out"
-        style={{
-          width: `${progress}%`,
-          background: 'linear-gradient(to right, hsl(var(--primary)), #38bdf8)',
-          boxShadow: '0 0 8px rgba(99, 102, 241, 0.5)',
-        }}
+        className="progress-bar h-full rounded-r-sm transition-[width] duration-150 ease-out"
+        style={{ width: `${progress}%` }}
       />
+      <style>{`
+        .progress-bar {
+          background: linear-gradient(to right, #6366f1, #a855f7, #06b6d4, #ec4899, #6366f1);
+          background-size: 300% 100%;
+          animation: progress-hue 4s linear infinite;
+          box-shadow: 0 0 8px rgba(99, 102, 241, 0.5);
+        }
+        @keyframes progress-hue {
+          0%   { background-position: 0% 50%; }
+          100% { background-position: 300% 50%; }
+        }
+      `}</style>
     </div>
   );
 }
