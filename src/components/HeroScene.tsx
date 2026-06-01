@@ -14,7 +14,6 @@ export default function HeroScene() {
         loop
         playsInline
         className="absolute top-1/2 left-1/2 min-w-[120%] min-h-[120%] -translate-x-1/2 -translate-y-1/2 object-cover"
-        poster={`${BASE}images/backgrounds/dark/01_dark.png`}
       >
         <source src={`${BASE}video/bg.mp4`} type="video/mp4" />
       </video>
