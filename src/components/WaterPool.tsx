@@ -64,8 +64,11 @@ export default function WaterPool() {
       octx.beginPath(); octx.arc(w * 0.3, h * 0.3, 200, 0, Math.PI * 2); octx.fill();
       octx.fillStyle = 'rgba(0,0,0,0.02)';
       octx.beginPath(); octx.arc(w * 0.7, h * 0.5, 180, 0, Math.PI * 2); octx.fill();
-      // 标题 — 在水面区域
-      octx.fillStyle = '#111111';
+      // 标题 — 品牌渐变色
+      const titleGrad = octx.createLinearGradient(0, 0, w, 0);
+      titleGrad.addColorStop(0, '#6366f1');
+      titleGrad.addColorStop(1, '#38bdf8');
+      octx.fillStyle = titleGrad;
       octx.font = `bold ${Math.min(w * 0.08, 80)}px "Noto Serif SC", serif`;
       octx.textAlign = 'center';
       octx.fillText("RSY's 1st BLOG", w / 2, h * 0.55);
