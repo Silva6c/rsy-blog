@@ -20,13 +20,21 @@ const TILT_D = 3.5;
 
 /* ── 背景图片 ── */
 const BASE = import.meta.env.BASE_URL;
-const BG_IMAGES = [
+const BG_DARK = [
   `${BASE}images/backgrounds/dark/01_dark.png`,
   `${BASE}images/backgrounds/dark/02_dark.png`,
   `${BASE}images/backgrounds/dark/03_dark.png`,
   `${BASE}images/backgrounds/dark/04_dark.png`,
   `${BASE}images/backgrounds/dark/05_dark.png`,
   `${BASE}images/backgrounds/dark/06_dark.jpg`,
+];
+const BG_LIGHT = [
+  `${BASE}images/backgrounds/light/01_light.png`,
+  `${BASE}images/backgrounds/light/02_light.png`,
+  `${BASE}images/backgrounds/light/03_light.png`,
+  `${BASE}images/backgrounds/light/04_light.png`,
+  `${BASE}images/backgrounds/light/05_light.png`,
+  `${BASE}images/backgrounds/light/06_light.jpg`,
 ];
 const BG_INTERVAL = 30000;
 
@@ -50,19 +58,19 @@ export default function WaterPool() {
     let h2 = new Float32Array(NX * NZ);
 
     /* ── 背景图片 ── */
-    const bgImages: HTMLImageElement[] = [];
+    const darkImages: HTMLImageElement[] = [];
+    const lightImages: HTMLImageElement[] = [];
     let bgIndex = 0;
-    let bgLoaded = false;
-    // 预加载图片
-    BG_IMAGES.forEach((url, i) => {
-      const img = new Image();
-      img.onload = () => { if (i === 0) { bgLoaded = true; drawBg(); } };
-      img.src = url;
-      bgImages.push(img);
+    // 预加载两套图
+    BG_DARK.forEach((url) => {
+      const img = new Image(); img.src = url; darkImages.push(img);
+    });
+    BG_LIGHT.forEach((url) => {
+      const img = new Image(); img.src = url; lightImages.push(img);
     });
     // 定时轮换
     const bgTimer = setInterval(() => {
-      bgIndex = (bgIndex + 1) % BG_IMAGES.length;
+      bgIndex = (bgIndex + 1) % BG_DARK.length;
       drawBg();
     }, BG_INTERVAL);
 
@@ -91,56 +99,37 @@ export default function WaterPool() {
 
     /* ── 画背景 ── */
     const drawBg = () => {
-      const theme = currentTheme;
-      if (theme === 'light') {
-        // 浅色模式 — 白色底
-        octx.fillStyle = '#f5f3fa';
-        octx.fillRect(0, 0, w, h);
-        octx.fillStyle = 'rgba(99,102,241,0.04)';
-        octx.beginPath(); octx.arc(w * 0.3, h * 0.3, 200, 0, Math.PI * 2); octx.fill();
-        octx.fillStyle = 'rgba(168,85,247,0.03)';
-        octx.beginPath(); octx.arc(w * 0.7, h * 0.5, 180, 0, Math.PI * 2); octx.fill();
-        // 标题
-        const titleGrad = octx.createLinearGradient(0, 0, w, 0);
-        titleGrad.addColorStop(0, '#6366f1');
-        titleGrad.addColorStop(1, '#38bdf8');
-        octx.fillStyle = titleGrad;
-        octx.font = `bold ${Math.min(w * 0.08, 80)}px "Noto Serif SC", serif`;
-        octx.textAlign = 'center';
-        octx.fillText("RSY's 1st BLOG", w / 2, h * 0.55);
-        octx.fillStyle = 'rgba(0,0,0,0.4)';
-        octx.font = `${Math.min(w * 0.025, 24)}px "Inter","Noto Sans SC",sans-serif`;
-        octx.fillText('记录 · 思考 · 创造', w / 2, h * 0.55 + 50);
-        octx.textAlign = 'start';
+      const isLight = currentTheme === 'light';
+      const images = isLight ? lightImages : darkImages;
+      const img = images[bgIndex % images.length];
+
+      if (img && img.complete) {
+        const iw = img.naturalWidth, ih = img.naturalHeight;
+        const scale = Math.max(w / iw, h / ih);
+        const sw = iw * scale, sh = ih * scale;
+        const sx = (w - sw) / 2, sy = (h - sh) / 2;
+        octx.drawImage(img, sx, sy, sw, sh);
       } else {
-        // 深色模式 — 图片背景
-        const img = bgImages[bgIndex];
-        if (img && img.complete) {
-          const iw = img.naturalWidth, ih = img.naturalHeight;
-          const scale = Math.max(w / iw, h / ih);
-          const sw = iw * scale, sh = ih * scale;
-          const sx = (w - sw) / 2, sy = (h - sh) / 2;
-          octx.drawImage(img, sx, sy, sw, sh);
-        } else {
-          octx.fillStyle = '#0d0b1a';
-          octx.fillRect(0, 0, w, h);
-        }
-        // 暗色遮罩
-        octx.fillStyle = 'rgba(0,0,0,0.25)';
+        octx.fillStyle = isLight ? '#f5f3fa' : '#0d0b1a';
         octx.fillRect(0, 0, w, h);
-        // 标题
-        const titleGrad = octx.createLinearGradient(0, 0, w, 0);
-        titleGrad.addColorStop(0, '#6366f1');
-        titleGrad.addColorStop(1, '#38bdf8');
-        octx.fillStyle = titleGrad;
-        octx.font = `bold ${Math.min(w * 0.08, 80)}px "Noto Serif SC", serif`;
-        octx.textAlign = 'center';
-        octx.fillText("RSY's 1st BLOG", w / 2, h * 0.55);
-        octx.fillStyle = 'rgba(255,255,255,0.55)';
-        octx.font = `${Math.min(w * 0.025, 24)}px "Inter","Noto Sans SC",sans-serif`;
-        octx.fillText('记录 · 思考 · 创造', w / 2, h * 0.55 + 50);
-        octx.textAlign = 'start';
       }
+
+      // 遮罩
+      octx.fillStyle = isLight ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.25)';
+      octx.fillRect(0, 0, w, h);
+
+      // 标题
+      const titleGrad = octx.createLinearGradient(0, 0, w, 0);
+      titleGrad.addColorStop(0, '#6366f1');
+      titleGrad.addColorStop(1, '#38bdf8');
+      octx.fillStyle = titleGrad;
+      octx.font = `bold ${Math.min(w * 0.08, 80)}px "Noto Serif SC", serif`;
+      octx.textAlign = 'center';
+      octx.fillText("RSY's 1st BLOG", w / 2, h * 0.55);
+      octx.fillStyle = isLight ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.55)';
+      octx.font = `${Math.min(w * 0.025, 24)}px "Inter","Noto Sans SC",sans-serif`;
+      octx.fillText('记录 · 思考 · 创造', w / 2, h * 0.55 + 50);
+      octx.textAlign = 'start';
     };
     drawBg();
     window.addEventListener('resize', drawBg);
