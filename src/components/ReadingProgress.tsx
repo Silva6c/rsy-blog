@@ -33,6 +33,11 @@ export default function ReadingProgress() {
           animation: progress-hue 4s linear infinite;
           box-shadow: 0 0 8px rgba(99, 102, 241, 0.5);
         }
+        [data-theme='light'] .progress-bar {
+          background: linear-gradient(to right, #4f46e5, #7c3aed, #0891b2, #db2777, #4f46e5);
+          background-size: 300% 100%;
+          box-shadow: 0 0 10px rgba(79, 70, 229, 0.6);
+        }
         @keyframes progress-hue {
           0%   { background-position: 0% 50%; }
           100% { background-position: 300% 50%; }
