@@ -179,6 +179,41 @@ export default function WaterPool() {
     window.addEventListener('mousemove', onMM);
     window.addEventListener('touchmove', onTouch);
 
+    // 陀螺仪（移动端随动）
+    let gyroGamma = 0, gyroBeta = 0; // 平滑后的值
+    const onDeviceOrientation = (e: DeviceOrientationEvent) => {
+      if (e.gamma == null || e.beta == null) return;
+      // 低通滤波平滑
+      gyroGamma += (e.gamma - gyroGamma) * 0.08;
+      gyroBeta += (e.beta - gyroBeta) * 0.08;
+      // 水平倾斜 → X方向目标
+      zTiltTarget = clamp(gyroGamma * 2.5, -50, 50);
+      // 注入涟漪（手机晃动产生自然波动）
+      if (Math.abs(gyroGamma) > 2 || Math.abs(gyroBeta) > 2) {
+        const ix = Math.round((0.5 + gyroGamma * 0.01) * WX);
+        const iz = 2;
+        const impulse = Math.min(0.4, (Math.abs(gyroGamma) + Math.abs(gyroBeta)) * 0.005);
+        for (let di = -4; di <= 4; di++)
+          for (let dj = -4; dj <= 4; dj++) {
+            const ni = ix + di, nj = iz + dj;
+            if (ni >= 0 && ni < NX && nj >= 0 && nj < NZ)
+              h1[ni * NZ + nj] += impulse * Math.exp(-(di * di + dj * dj) / 8);
+          }
+      }
+    };
+    // 请求陀螺仪权限（iOS 13+ 需要）
+    if (typeof (DeviceOrientationEvent as any)?.requestPermission === 'function') {
+      // iOS 需要用户手势触发，这里静默失败，用户触摸时再请求
+      document.addEventListener('click', function iosGyro() {
+        (DeviceOrientationEvent as any).requestPermission().then((state: string) => {
+          if (state === 'granted') window.addEventListener('deviceorientation', onDeviceOrientation);
+        }).catch(() => {});
+        document.removeEventListener('click', iosGyro);
+      }, { once: true });
+    } else {
+      window.addEventListener('deviceorientation', onDeviceOrientation);
+    }
+
     /* ── 水面基准线 ── */
     const waterlineY = () => h * 0.45;
 
@@ -384,6 +419,7 @@ export default function WaterPool() {
       themeObserver.disconnect();
       window.removeEventListener('mousemove', onMM);
       window.removeEventListener('touchmove', onTouch);
+      window.removeEventListener('deviceorientation', onDeviceOrientation);
       window.removeEventListener('resize', resize);
       window.removeEventListener('resize', drawBg);
     };
