@@ -158,7 +158,7 @@ export default function WaterGlass() {
     scene.add(surfaceGroup);
 
     // ─── 阻尼晃荡动画 ───
-    const k = 10, d = 3.5;      // 刚度/阻尼
+    const k = 12, d = 2.8;      // 刚度↑阻尼↓ → 晃荡更久更明显
     let targetZ = 0, curZ = 0, velZ = 0;
     let lastMX = 0, lastT = performance.now(), animId = 0;
 
@@ -167,8 +167,8 @@ export default function WaterGlass() {
       const dt = Math.min((now - lastT) / 1000, 0.1);
       if (dt <= 0) { lastT = now; lastMX = e.clientX; return; }
       const vx = (e.clientX - lastMX) / dt;
-      // 速度映射：快速划动 → ±0.3 rad (±17°)
-      targetZ = THREE.MathUtils.clamp(vx * 0.001, -0.30, 0.30);
+      // 速度映射：快速划动 → ±0.45 rad (±26°)，幅度更大
+      targetZ = THREE.MathUtils.clamp(vx * 0.0015, -0.45, 0.45);
       lastMX = e.clientX;
       lastT = now;
     };
@@ -184,12 +184,13 @@ export default function WaterGlass() {
       velZ += (targetZ - curZ) * k * dt - velZ * d * dt;
       curZ += velZ * dt;
 
-      // 目标衰减 → 自然停稳
-      targetZ *= 0.94;
+      // 目标缓慢衰减 → 晃荡持续更久后自然停稳
+      targetZ *= 0.97;
 
       surfaceGroup.rotation.z = curZ;
-      // 同步微微旋转玻璃（视觉联动）
-      glass.rotation.z = curZ * 0.3;
+      // 玻璃 + 水体同步倾斜（增强晃荡视觉连带感）
+      glass.rotation.z = curZ * 0.4;
+      water.rotation.z = curZ * 0.5;
 
       renderer.render(scene, camera);
     };
