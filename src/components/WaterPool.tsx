@@ -23,10 +23,10 @@ export default function WaterPool() {
     scene.background = new THREE.Color('#0d0b1a');
     scene.fog = new THREE.Fog('#0d0b1a', 5, 15);
 
-    // 相机：略俯视水面
-    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 30);
-    camera.position.set(0, 2.5, 6);
-    camera.lookAt(0, -0.3, 0);
+    // 相机：向下俯视，水面占下半屏
+    const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 30);
+    camera.position.set(0, 3, 5);
+    camera.lookAt(0, -1.2, 0);  // 视线向下，水面在半屏以下
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
@@ -57,20 +57,19 @@ export default function WaterPool() {
     const positions = geom.attributes.position.array as Float32Array;
     const vertCount = positions.length / 3;
 
-    // 水面材质 — 半透明蓝色玻璃
+    // 水面材质 — 高透明海洋蓝
     const mat = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color('#4488cc'),
-      metalness: 0.05,
-      roughness: 0.1,
+      color: new THREE.Color('#3399cc'),
+      metalness: 0.02,
+      roughness: 0.08,
       transparent: true,
-      opacity: 0.55,
-      envMapIntensity: 0.8,
-      specularIntensity: 0.6,
+      opacity: 0.45,
+      envMapIntensity: 1.0,
+      specularIntensity: 0.8,
       specularColor: new THREE.Color('#ffffff'),
-      clearcoat: 0.3,
     });
     const mesh = new THREE.Mesh(geom, mat);
-    mesh.position.y = -1.5;
+    mesh.position.y = -1.8;  // 更靠下，占下半屏
     scene.add(mesh);
 
     // 水下底色平面（加深深度感）
@@ -81,7 +80,7 @@ export default function WaterPool() {
       roughness: 0.8,
     });
     const floor = new THREE.Mesh(floorGeom, floorMat);
-    floor.position.y = -2.5;
+    floor.position.y = -3.0;
     scene.add(floor);
 
     // ─── 高度场 ───
@@ -93,7 +92,7 @@ export default function WaterPool() {
 
     // ─── 鼠标涟漪 ───
     const raycaster = new THREE.Raycaster();
-    const waterPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 1.5); // y=-1.5
+    const waterPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 1.8); // y=-1.8
 
     const onMouse = (e: MouseEvent) => {
       // 屏幕坐标 → NDC → 射线
