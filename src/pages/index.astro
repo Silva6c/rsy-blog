@@ -1,12 +1,14 @@
 ---
-// ─── 首页 — 3D 大片质感 ───
+// ─── 首页 — 视频大片 ───
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import HeroScene from '@/components/HeroScene.tsx';
+import { SITE_DESCRIPTION } from '@/lib/constants';
 ---
 
 <BaseLayout
   title="首页"
-  description="RSY 的个人技术博客 — 记录学习、思考与创造"
+  description={SITE_DESCRIPTION}
+  hideBackground
 >
-  <HeroScene client:load />
+  <HeroScene client:idle />
 </BaseLayout>

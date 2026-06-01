@@ -87,26 +87,22 @@
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 }
 
-/* ─── 基础背景（图片加载前显示） ─── */
+/* ─── 页面底色 ─── */
+:root {
+  --page-bg: #0d0b1a;
+}
+
+[data-theme='light'] {
+  --page-bg: #f5f3fa;
+}
+
 body {
   font-family: var(--font-sans);
-  background-color: #0d0b1a;
+  background-color: var(--page-bg);
   color: hsl(var(--foreground));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
-[data-theme='light'] body {
-  background-color: #f5f3fa;
-}
-
-/* ─── 流动渐变关键帧 ─── */
-@keyframes gradient-flow {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
 
 /* ─── 果冻弹跳动画 ─── */
 @keyframes icon-jelly {
@@ -286,4 +282,37 @@ a:hover {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* ─── Hero 视频工具类 ─── */
+.hero-vignette {
+  background: radial-gradient(ellipse at center, transparent 40%, var(--page-bg) 100%);
+}
+.font-serif-sc {
+  font-family: 'Noto Serif SC', serif;
+}
+.text-glow-brand {
+  text-shadow: 0 0 80px rgba(99, 102, 241, 0.3);
+}
+
+/* 入场动画（替代 framer-motion，零 JS 开销） */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-fade-up {
+  animation: fade-up 1s ease-out both;
+}
+.animate-fade-up.delay-300 {
+  animation-delay: 0.3s;
+}
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out both;
+}
+.animate-fade-in.delay-1500 {
+  animation-delay: 1.5s;
 }

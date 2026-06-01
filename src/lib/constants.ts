@@ -6,6 +6,12 @@ export const SITE_NAME = "RSY's 1st BLOG";
 /** 站点描述 */
 export const SITE_DESCRIPTION = "RSY 的个人技术博客 — 记录学习、思考与创造";
 
+/** 首页标语 */
+export const SITE_TAGLINE = "记录 · 思考 · 创造";
+
+/** Header + Footer 合计高度 (px)，用于全屏区计算 */
+export const CHROME_HEIGHT = 180;
+
 /** 站点 URL */
 export const SITE_URL = import.meta.env.PROD
   ? 'https://silva6c.github.io'

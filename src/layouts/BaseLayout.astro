@@ -10,17 +10,15 @@ import '@/styles/globals.css';
 import { BASE, SITE_NAME, SITE_DESCRIPTION } from '@/lib/constants';
 
 export interface Props {
-  /** 页面标题（会追加到站点名后面） */
   title?: string;
-  /** 页面描述（用于 SEO） */
   description?: string;
-  /** Open Graph 图片 URL */
   ogImage?: string;
-  /** 是否显示页脚 */
   showFooter?: boolean;
+  /** 首页不需要两层背景图，设为 true 跳过 BackgroundImage */
+  hideBackground?: boolean;
 }
 
-const { title, description, ogImage, showFooter = true } = Astro.props;
+const { title, description, ogImage, showFooter = true, hideBackground = false } = Astro.props;
 
 const pageTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
 const pageDescription = description ?? SITE_DESCRIPTION;
@@ -72,8 +70,8 @@ const pageDescription = description ?? SITE_DESCRIPTION;
     </script>
   </head>
   <body class="min-h-screen flex flex-col">
-    <!-- 背景图片层（客户端渲染） -->
-    <BackgroundImage client:load />
+    <!-- 背景图片层（首页跳过，视频背景替代） -->
+    {!hideBackground && <BackgroundImage client:load />}
 
     <!-- 欢迎屏幕（首次访问显示） -->
     <WelcomeScreen client:load />
