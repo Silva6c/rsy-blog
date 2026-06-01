@@ -119,6 +119,20 @@ export default function WaterGlass() {
     const glass = new THREE.Mesh(glassGeom, glassMat);
     scene.add(glass);
 
+    // 杯口发光环（视觉强调玻璃存在）
+    const rimGeom = new THREE.TorusGeometry(0.50, 0.015, 16, 72);
+    const rimMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#c8d8ff'),
+      roughness: 0.1,
+      metalness: 0.3,
+      emissive: new THREE.Color('#6688cc'),
+      emissiveIntensity: 0.4,
+    });
+    const rim = new THREE.Mesh(rimGeom, rimMat);
+    rim.rotation.x = Math.PI / 2;
+    rim.position.y = 0.70;
+    scene.add(rim);
+
     // ─── 水体 ───
     const waterGeom = new THREE.CylinderGeometry(0.38, 0.36, 0.65, 64);
     const waterMat = new THREE.MeshPhysicalMaterial({
@@ -188,9 +202,10 @@ export default function WaterGlass() {
       targetZ *= 0.97;
 
       surfaceGroup.rotation.z = curZ;
-      // 玻璃 + 水体同步倾斜（增强晃荡视觉连带感）
+      // 玻璃 + 水体 + 杯口同步倾斜
       glass.rotation.z = curZ * 0.4;
       water.rotation.z = curZ * 0.5;
+      rim.rotation.z = curZ * 0.4;
 
       renderer.render(scene, camera);
     };
@@ -218,7 +233,7 @@ export default function WaterGlass() {
       window.removeEventListener('mousemove', onMouse);
       window.removeEventListener('resize', resize);
       renderer.dispose();
-      [glassGeom, glassMat, waterGeom, waterMat, surfaceGeom, surfaceMat, bgTex].forEach(o => o.dispose());
+      [glassGeom, glassMat, waterGeom, waterMat, surfaceGeom, surfaceMat, rimGeom, rimMat, bgTex].forEach(o => o.dispose());
       container.removeChild(renderer.domElement);
     };
   }, []);
