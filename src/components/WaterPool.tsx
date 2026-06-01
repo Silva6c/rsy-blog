@@ -18,6 +18,18 @@ const REFRACT_Z = 0.8;        // Z梯度→垂直偏移系数
 const TILT_K = 8;
 const TILT_D = 3.5;
 
+/* ── 背景图片 ── */
+const BASE = import.meta.env.BASE_URL;
+const BG_IMAGES = [
+  `${BASE}images/backgrounds/dark/01_dark.png`,
+  `${BASE}images/backgrounds/dark/02_dark.png`,
+  `${BASE}images/backgrounds/dark/03_dark.png`,
+  `${BASE}images/backgrounds/dark/04_dark.png`,
+  `${BASE}images/backgrounds/dark/05_dark.png`,
+  `${BASE}images/backgrounds/dark/06_dark.jpg`,
+];
+const BG_INTERVAL = 30000;
+
 export default function WaterPool() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -37,8 +49,25 @@ export default function WaterPool() {
     let h1 = new Float32Array(NX * NZ);
     let h2 = new Float32Array(NX * NZ);
 
+    /* ── 背景图片 ── */
+    const bgImages: HTMLImageElement[] = [];
+    let bgIndex = 0;
+    let bgLoaded = false;
+    // 预加载图片
+    BG_IMAGES.forEach((url, i) => {
+      const img = new Image();
+      img.onload = () => { if (i === 0) { bgLoaded = true; drawBg(); } };
+      img.src = url;
+      bgImages.push(img);
+    });
+    // 定时轮换
+    const bgTimer = setInterval(() => {
+      bgIndex = (bgIndex + 1) % BG_IMAGES.length;
+      drawBg();
+    }, BG_INTERVAL);
+
     /* ── Z 倾斜状态 ── */
-    let zTilt = 0;            // 当前Z倾角
+    let zTilt = 0;
     let zTiltVel = 0;
     let zTiltTarget = 0;
     let lastMX = 0, lastMY = 0, lastT = performance.now();
@@ -57,13 +86,23 @@ export default function WaterPool() {
 
     /* ── 画背景 ── */
     const drawBg = () => {
-      octx.fillStyle = '#ffffff';
+      // 背景图片（cover 模式）
+      const img = bgImages[bgIndex];
+      if (img && img.complete) {
+        const iw = img.naturalWidth, ih = img.naturalHeight;
+        const scale = Math.max(w / iw, h / ih);
+        const sw = iw * scale, sh = ih * scale;
+        const sx = (w - sw) / 2, sy = (h - sh) / 2;
+        octx.drawImage(img, sx, sy, sw, sh);
+      } else {
+        // 图片未就绪时用深色底
+        octx.fillStyle = '#0d0b1a';
+        octx.fillRect(0, 0, w, h);
+      }
+      // 暗色遮罩（让上方文字可读）
+      octx.fillStyle = 'rgba(0,0,0,0.25)';
       octx.fillRect(0, 0, w, h);
-      // 装饰光斑
-      octx.fillStyle = 'rgba(0,0,0,0.03)';
-      octx.beginPath(); octx.arc(w * 0.3, h * 0.3, 200, 0, Math.PI * 2); octx.fill();
-      octx.fillStyle = 'rgba(0,0,0,0.02)';
-      octx.beginPath(); octx.arc(w * 0.7, h * 0.5, 180, 0, Math.PI * 2); octx.fill();
+
       // 标题 — 品牌渐变色
       const titleGrad = octx.createLinearGradient(0, 0, w, 0);
       titleGrad.addColorStop(0, '#6366f1');
@@ -72,7 +111,7 @@ export default function WaterPool() {
       octx.font = `bold ${Math.min(w * 0.08, 80)}px "Noto Serif SC", serif`;
       octx.textAlign = 'center';
       octx.fillText("RSY's 1st BLOG", w / 2, h * 0.55);
-      octx.fillStyle = 'rgba(0,0,0,0.35)';
+      octx.fillStyle = 'rgba(255,255,255,0.55)';
       octx.font = `${Math.min(w * 0.025, 24)}px "Inter","Noto Sans SC",sans-serif`;
       octx.fillText('记录 · 思考 · 创造', w / 2, h * 0.55 + 50);
       octx.textAlign = 'start';
@@ -308,6 +347,7 @@ export default function WaterPool() {
 
     return () => {
       cancelAnimationFrame(animId);
+      clearInterval(bgTimer);
       observer.disconnect();
       window.removeEventListener('mousemove', onMM);
       window.removeEventListener('touchmove', onTouch);
