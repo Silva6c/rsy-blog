@@ -126,10 +126,8 @@ body {
 }
 
 .glass-card:hover {
-  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.1);
-  border-color: rgba(99, 102, 241, 0.25);
-  transform: perspective(800px) rotateX(1deg) rotateY(-1deg) translateY(-2px);
-  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 0 30px rgba(99, 102, 241, 0.2), 0 8px 32px rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.3);
 }
 
 [data-theme='light'] .glass-card:hover {
