@@ -6,20 +6,27 @@ const BASE = import.meta.env.BASE_URL;
 export default function HeroScene() {
   return (
     <div className="relative flex min-h-[calc(100vh-180px)] items-center justify-center overflow-hidden">
-      {/* 全屏视频背景 */}
+      {/* 全屏视频背景 — 放大至裁切边界 */}
       <video
         autoPlay
         muted
         loop
         playsInline
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute top-1/2 left-1/2 min-w-[120%] min-h-[120%] -translate-x-1/2 -translate-y-1/2 object-cover"
         poster={`${BASE}images/backgrounds/dark/01_dark.png`}
       >
         <source src={`${BASE}video/bg.mp4`} type="video/mp4" />
       </video>
 
-      {/* 暗色渐变遮罩 */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0d0b1a]/60 via-transparent to-[#0d0b1a]/80" />
+      {/* 四周暗角遮罩 — 模糊边界 + 融入背景 */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `
+            radial-gradient(ellipse at center, transparent 40%, #0d0b1a 100%)
+          `,
+        }}
+      />
 
       {/* 居中内容 */}
       <div className="relative z-10 text-center px-4">
