@@ -23,8 +23,9 @@ export default function GiscusComments() {
     script.setAttribute('data-repo', GISCUS_REPO);
     script.setAttribute('data-repo-id', GISCUS_REPO_ID);
     script.setAttribute('data-category-id', GISCUS_CATEGORY_ID);
-    script.setAttribute('data-category', 'Announcements');
+    script.setAttribute('data-category', 'Ideas');
     script.setAttribute('data-mapping', 'pathname');
+    script.setAttribute('data-strict', '1');
     script.setAttribute('data-reactions-enabled', '1');
     script.setAttribute('data-emit-metadata', '0');
     script.setAttribute('data-input-position', 'bottom');
