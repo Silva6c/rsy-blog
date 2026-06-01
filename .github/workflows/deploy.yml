@@ -32,6 +32,10 @@ jobs:
 
       - name: 构建
         run: npm run build
+        env:
+          PUBLIC_GISCUS_REPO: Silva6c/rsy-blog
+          PUBLIC_GISCUS_REPO_ID: R_kgDOStDGrA
+          PUBLIC_GISCUS_CATEGORY_ID: DIC_kwDOStDGrM4C-QZE
 
       - name: 上传构建产物
         uses: actions/upload-pages-artifact@v3
