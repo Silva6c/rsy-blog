@@ -1,7 +1,7 @@
 ---
-// ─── 首页 — Three.js 半杯水晃荡 ───
+// ─── 首页 — WebGL Water 水面 ───
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import WaterGlass from '@/components/WaterGlass.tsx';
+import WaterPool from '@/components/WaterPool.tsx';
 import { SITE_NAME, SITE_TAGLINE, SITE_DESCRIPTION } from '@/lib/constants';
 ---
 
@@ -10,7 +10,7 @@ import { SITE_NAME, SITE_TAGLINE, SITE_DESCRIPTION } from '@/lib/constants';
   description={SITE_DESCRIPTION}
   hideBackground
 >
-  <WaterGlass client:load />
+  <WaterPool client:load />
 
   <div class="relative flex min-h-[calc(100vh-180px)] items-center justify-center">
     <div class="text-center px-4">
