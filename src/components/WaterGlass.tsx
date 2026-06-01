@@ -83,28 +83,38 @@ export default function WaterGlass() {
     scene.environment = pmrem.fromScene(envScene).texture;
     scene.background = new THREE.Color('#0d0b1a');
 
-    // ─── 背景折射板（棋盘格，透过玻璃可见扭曲） ───
+    // ─── 背景折射板（亮色棋盘格 → 折射清晰可见） ───
     const bgTex = createCheckerTexture();
     const bgPlane = new THREE.Mesh(
       new THREE.PlaneGeometry(4, 4),
       new THREE.MeshBasicMaterial({ map: bgTex }),
     );
-    bgPlane.position.z = -2;
+    bgPlane.position.z = -1.8;
     scene.add(bgPlane);
+    // 额外：左右彩色光板增强折射色彩
+    const sideGeom = new THREE.PlaneGeometry(3, 3);
+    const leftPanel = new THREE.Mesh(sideGeom, new THREE.MeshBasicMaterial({ color: '#6366f1', side: THREE.DoubleSide }));
+    leftPanel.position.set(-2.5, 0, -1);
+    leftPanel.rotation.y = 0.5;
+    scene.add(leftPanel);
+    const rightPanel = new THREE.Mesh(sideGeom, new THREE.MeshBasicMaterial({ color: '#06b6d4', side: THREE.DoubleSide }));
+    rightPanel.position.set(2.5, 0, -1);
+    rightPanel.rotation.y = -0.5;
+    scene.add(rightPanel);
 
     // ─── 玻璃杯（外层） ───
     const glassGeom = new THREE.LatheGeometry(PROFILE, 72);
     const glassMat = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color('#ffffff'),
-      metalness: 0.05,         // 微金属感增强边缘可见
-      roughness: 0.02,
-      transmission: 1,
+      color: new THREE.Color('#eef6ff'),
+      metalness: 0.08,
+      roughness: 0.04,
+      transmission: 0.85,       // 不完全透光 → 玻璃体可见
       ior: 1.5,
       thickness: 0.6,
       transparent: true,
-      opacity: 1,
-      envMapIntensity: 1.0,    // 增强环境反射
-      specularIntensity: 1.2,
+      opacity: 0.92,
+      envMapIntensity: 1.2,
+      specularIntensity: 1.5,
     });
     const glass = new THREE.Mesh(glassGeom, glassMat);
     scene.add(glass);
@@ -112,16 +122,16 @@ export default function WaterGlass() {
     // ─── 水体 ───
     const waterGeom = new THREE.CylinderGeometry(0.38, 0.36, 0.65, 64);
     const waterMat = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color('#d0e8ff'),
+      color: new THREE.Color('#88ccff'),
       metalness: 0,
-      roughness: 0.03,
-      transmission: 1,
+      roughness: 0.05,
+      transmission: 0.7,          // 降低透光率 → 水体可见蓝色
       ior: 1.333,
-      attenuationColor: new THREE.Color('#99ccff'),
-      attenuationDistance: 0.25,
+      attenuationColor: new THREE.Color('#6699cc'),
+      attenuationDistance: 0.2,
       transparent: true,
-      opacity: 1,
-      envMapIntensity: 0.9,
+      opacity: 0.9,
+      envMapIntensity: 1.0,
     });
     const water = new THREE.Mesh(waterGeom, waterMat);
     water.position.y = -0.03;
