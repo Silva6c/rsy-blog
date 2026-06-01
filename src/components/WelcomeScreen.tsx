@@ -76,14 +76,6 @@ export default function WelcomeScreen() {
               记录学习、思考与创造
             </motion.p>
 
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 2.8, duration: 0.4 }}
-              className="mt-8 text-xs text-[hsl(var(--muted-foreground))/0.5"
-            >
-              点击任意位置继续
-            </motion.p>
           </div>
         </motion.div>
       )}
