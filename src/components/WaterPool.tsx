@@ -7,12 +7,12 @@ import { useEffect, useRef } from 'react';
 /* ── 波场参数 ── */
 const WX = 200;               // X 方向采样数
 const WZ = 40;                // Z 方向采样数
-const WAVE_C = 0.25;          // 波速↑→更活跃
-const DAMPING = 0.985;        // 阻尼更慢→波动持久
+const WAVE_C = 0.15;          // 波速
+const DAMPING = 0.98;         // 阻尼
 
 /* ── 折射参数 ── */
-const REFRACT_X = 3.5;        // X梯度→水平偏移系数↑
-const REFRACT_Z = 1.5;        // Z梯度→垂直偏移系数↑
+const REFRACT_X = 2.2;        // X梯度→水平偏移系数
+const REFRACT_Z = 0.8;        // Z梯度→垂直偏移系数
 
 /* ── 弹簧参数（整体倾斜） ── */
 const TILT_K = 8;
@@ -92,8 +92,8 @@ export default function WaterPool() {
       // 涟漪 — 在波场中注入脉冲
       const ix = Math.round((mx / w) * WX);
       const iz = 2 + Math.floor(Math.random() * (WZ - 4)); // 近前壁处
-      const impulse = 1.2;
-      const spread = 8;
+      const impulse = 0.6;
+      const spread = 6;
       for (let di = -spread; di <= spread; di++) {
         for (let dj = -spread; dj <= spread; dj++) {
           const ni = ix + di, nj = iz + dj;
@@ -134,15 +134,15 @@ export default function WaterPool() {
       zTilt += zTiltVel * dt;
       zTiltTarget *= 0.95;
 
-      // 随机微扰（更频繁更强）
-      if (Math.random() < 0.08) {
+      // 随机微扰
+      if (Math.random() < 0.03) {
         const ri = 1 + Math.floor(Math.random() * (NX - 2));
         const rj = 1 + Math.floor(Math.random() * (NZ - 2));
-        for (let di = -3; di <= 3; di++)
-          for (let dj = -3; dj <= 3; dj++) {
+        for (let di = -2; di <= 2; di++)
+          for (let dj = -2; dj <= 2; dj++) {
             const ni = ri + di, nj = rj + dj;
             if (ni >= 0 && ni < NX && nj >= 0 && nj < NZ)
-              h1[ni * NZ + nj] += 0.06 * Math.exp(-(di * di + dj * dj) / 4);
+              h1[ni * NZ + nj] += 0.03 * Math.exp(-(di * di + dj * dj) / 3);
           }
       }
 
@@ -209,7 +209,7 @@ export default function WaterPool() {
       for (let i = 0; i <= WX; i++) {
         const x = i * segW;
         const waveH = h2[i * NZ + 0];   // z=0 前壁处
-        const y = wlBase + waveH * 60;
+        const y = wlBase + waveH * 30;
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
