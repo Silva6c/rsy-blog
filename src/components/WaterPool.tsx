@@ -4,9 +4,9 @@
 import { useEffect, useRef } from 'react';
 
 const SAMPLES = 180;          // 水面线采样点
-const DAMPING = 0.985;
-const SPEED = 0.2;
-const REFRACT = 0.015;       // 折射强度
+const DAMPING = 0.955;        // 更硬更快衰减
+const SPEED = 0.1;            // 更慢更稳
+const REFRACT = 0.018;        // 折射稍强
 
 export default function WaterPool() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -64,8 +64,8 @@ export default function WaterPool() {
     const onMouse = (mx: number, my: number) => {
       const ix = Math.round((mx / w) * SAMPLES);
       if (ix < 2 || ix >= N - 2) return;
-      const impulse = 0.7;
-      for (let d = -10; d <= 10; d++) {
+      const impulse = 0.3;   // 减轻鼠标冲击
+      for (let d = -6; d <= 6; d++) {
         const ni = ix + d;
         if (ni >= 0 && ni < N) w1[ni] += impulse * Math.exp(-(d * d) / 16);
       }
@@ -88,12 +88,12 @@ export default function WaterPool() {
         const lap = w1[i - 1] + w1[i + 1] - 2 * w1[i];
         w2[i] = (2 * w1[i] - w0[i] + c * lap) * DAMPING;
       }
-      // 随机微扰
-      if (Math.random() < 0.04) {
+      // 随机微扰（更小更少）
+      if (Math.random() < 0.02) {
         const ri = 1 + Math.floor(Math.random() * (N - 2));
-        for (let d = -2; d <= 2; d++) {
+        for (let d = -1; d <= 1; d++) {
           const ni = ri + d;
-          if (ni >= 0 && ni < N) w1[ni] += 0.03 * Math.exp(-(d * d) / 2);
+          if (ni >= 0 && ni < N) w1[ni] += 0.015 * Math.exp(-(d * d) / 1.5);
         }
       }
 
@@ -134,8 +134,8 @@ export default function WaterPool() {
       }
       ctx.putImageData(imageData, 0, Math.floor(wlBase) - 5);
 
-      // 淡蓝色水体覆盖（下半屏）
-      ctx.fillStyle = 'rgba(180,210,240,0.12)';
+      // 蓝色水体覆盖（下半屏）
+      ctx.fillStyle = 'rgba(150,200,235,0.28)';
       ctx.fillRect(0, wlBase, w, h - wlBase);
 
       // 3. 水面线（切面轮廓）
@@ -147,8 +147,8 @@ export default function WaterPool() {
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
-      ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+      ctx.lineWidth = 2.5;
       ctx.stroke();
 
       // 4. 波峰高光点
