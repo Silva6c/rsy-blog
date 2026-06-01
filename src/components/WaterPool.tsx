@@ -59,13 +59,13 @@ export default function WaterPool() {
 
     // 水面材质 — 高透明海洋蓝
     const mat = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color('#3399cc'),
-      metalness: 0.02,
-      roughness: 0.08,
+      color: new THREE.Color('#44aadd'),
+      metalness: 0.03,
+      roughness: 0.06,
       transparent: true,
-      opacity: 0.45,
-      envMapIntensity: 1.0,
-      specularIntensity: 0.8,
+      opacity: 0.35,             // 更透
+      envMapIntensity: 1.2,
+      specularIntensity: 1.0,
       specularColor: new THREE.Color('#ffffff'),
     });
     const mesh = new THREE.Mesh(geom, mat);
@@ -82,6 +82,19 @@ export default function WaterPool() {
     const floor = new THREE.Mesh(floorGeom, floorMat);
     floor.position.y = -3.0;
     scene.add(floor);
+
+    // 地平线光晕（水面远端的微光边界）
+    const glowGeom = new THREE.PlaneGeometry(size, 1.5);
+    const glowMat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color('#8899dd'),
+      transparent: true,
+      opacity: 0.15,
+      side: THREE.DoubleSide,
+    });
+    const glow = new THREE.Mesh(glowGeom, glowMat);
+    glow.position.set(0, -1.5, -half + 0.5);
+    glow.rotation.x = -Math.PI / 3;
+    scene.add(glow);
 
     // ─── 高度场 ───
     // 三缓冲区：前一帧 / 当前 / 后一帧
@@ -110,15 +123,15 @@ export default function WaterPool() {
       const iy = Math.round((pt.z + half) / size * GRID);
       if (ix < 1 || ix >= N - 1 || iy < 1 || iy >= N - 1) return;
 
-      // 在点击点产生涟漪脉冲
-      const impulse = 0.25;
-      const spread = 3;
+      // 大范围涟漪脉冲 — 鼠标划过激起明显波纹
+      const impulse = 0.5;
+      const spread = 8;
       for (let di = -spread; di <= spread; di++) {
         for (let dj = -spread; dj <= spread; dj++) {
           const ni = ix + di, nj = iy + dj;
           if (ni < 0 || ni >= N || nj < 0 || nj >= N) continue;
           const dist = Math.sqrt(di * di + dj * dj);
-          const val = impulse * Math.exp(-dist * dist / 4);
+          const val = impulse * Math.exp(-dist * dist / 12);
           h1[ni * N + nj] += val;
         }
       }
@@ -154,6 +167,21 @@ export default function WaterPool() {
       }
       geom.attributes.position.needsUpdate = true;
       geom.computeVertexNormals();
+
+      // 随机微扰 — 水面始终有细微波动，不死寂
+      if (Math.random() < 0.03) {
+        const rx = 1 + Math.floor(Math.random() * (N - 2));
+        const ry = 1 + Math.floor(Math.random() * (N - 2));
+        const ri = 0.04;
+        for (let di = -2; di <= 2; di++) {
+          for (let dj = -2; dj <= 2; dj++) {
+            const ni = rx + di, nj = ry + dj;
+            if (ni < 0 || ni >= N || nj < 0 || nj >= N) continue;
+            const d2 = di * di + dj * dj;
+            h1[ni * N + nj] += ri * Math.exp(-d2 / 2);
+          }
+        }
+      }
 
       // 缓冲区轮转
       [h0, h1, h2] = [h1, h2, h0];
