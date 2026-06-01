@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react';
 const SAMPLES = 180;          // 水面线采样点
 const DAMPING = 0.955;        // 更硬更快衰减
 const SPEED = 0.1;            // 更慢更稳
-const REFRACT = 0.018;        // 折射稍强
+const REFRACT = 0.025;        // 折射更明显
 
 export default function WaterPool() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -117,9 +117,10 @@ export default function WaterPool() {
         const waveSlope = sampleIdx > 0 && sampleIdx < N - 1
           ? (w2[sampleIdx + 1] - w2[sampleIdx - 1]) : 0;
 
-        // 折射偏移：越往下偏移越大（光线穿过更厚的水层）
-        const depth = py / ih; // 0 at surface, 1 at bottom
-        const offsetX = (waveSlope * 60 + waveH * 2) * depth * REFRACT * w;
+        // 折射偏移：水面处最强，向下渐弱（表面波的能量往下衰减）
+        const distFromSurface = py / ih;
+        const decay = Math.exp(-distFromSurface * 2.5);
+        const offsetX = (waveSlope * 80 + waveH * 4) * decay * REFRACT * w;
 
         for (let px = 0; px < iw; px++) {
           const srcX = Math.round(px + offsetX);
@@ -138,31 +139,31 @@ export default function WaterPool() {
       ctx.fillStyle = 'rgba(150,200,235,0.28)';
       ctx.fillRect(0, wlBase, w, h - wlBase);
 
-      // 3. 水面线（切面轮廓）
+      // 3. 水面线 — 笔直的水平线（物理正确）
+      ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      const segW = w / SAMPLES;
-      for (let i = 0; i <= SAMPLES; i++) {
-        const x = i * segW;
-        const y = wlBase + w2[i] * 35;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.strokeStyle = 'rgba(0,0,0,0.35)';
-      ctx.lineWidth = 2.5;
+      ctx.moveTo(0, wlBase);
+      ctx.lineTo(w, wlBase);
       ctx.stroke();
 
-      // 4. 波峰高光点
-      for (let i = 1; i < SAMPLES; i++) {
-        if (w2[i] > 0.004 && w2[i] > w2[i - 1] && w2[i] > w2[i + 1]) {
-          const x = i * segW;
-          const y = wlBase + w2[i] * 35;
-          const alpha = Math.min(w2[i] * 40, 0.5);
-          const g = ctx.createRadialGradient(x, y, 0, x, y, 8);
-          g.addColorStop(0, `rgba(255,255,255,${alpha * 1.5})`);
-          g.addColorStop(0.5, `rgba(200,220,255,${alpha})`);
-          g.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx.fillStyle = g;
-          ctx.fillRect(x - 10, y - 10, 20, 20);
+      // 水面微光晕（沿水平线上下扩散）
+      const glowGrad = ctx.createLinearGradient(0, wlBase - 4, 0, wlBase + 4);
+      glowGrad.addColorStop(0, 'rgba(200,220,255,0)');
+      glowGrad.addColorStop(0.5, 'rgba(200,220,255,0.12)');
+      glowGrad.addColorStop(1, 'rgba(200,220,255,0)');
+      ctx.fillStyle = glowGrad;
+      ctx.fillRect(0, wlBase - 4, w, 8);
+
+      // 4. 表面折射闪烁（沿水平线的微小光点，随波场移动）
+      for (let i = 0; i < SAMPLES; i += 3) {
+        const x = i * (w / SAMPLES);
+        // 波高决定该处是否有闪烁（波峰 → 更亮）
+        const hVal = Math.abs(w2[i]);
+        if (hVal > 0.002) {
+          const alpha = Math.min(hVal * 60, 0.25);
+          ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+          ctx.fillRect(x - 1.5, wlBase - 3, 3, 6);
         }
       }
 
