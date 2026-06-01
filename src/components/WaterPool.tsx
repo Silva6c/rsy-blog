@@ -34,9 +34,9 @@ export default function WaterPool() {
 
     // ─── 鼠标涟漪 ───
     const onMouse = (mx: number, my: number) => {
-      // 屏幕坐标 → 波场索引（水占下半屏，y 从 h/2 到 h 映射到波场 0..N-1）
+      // 屏幕坐标 → 波场索引（水占下半屏 45%~100%）
       const ix = Math.round((mx / w) * GRID);
-      const iy = Math.round(((my - h * 0.4) / (h * 0.6)) * GRID);
+      const iy = Math.round(((my - h * 0.45) / (h * 0.55)) * GRID);
       if (ix < 1 || ix >= N - 1 || iy < 1 || iy >= N - 1) return;
       const impulse = 0.6;
       for (let di = -8; di <= 8; di++) {
@@ -98,8 +98,8 @@ export default function WaterPool() {
       ctx.fillStyle = '#0a0a18';
       ctx.fillRect(0, 0, w, h);
 
-      // 水下深色区（底部）
-      const waterTop = h * 0.35;
+      // 水面区域 — 下半屏（0.45~1.0）
+      const waterTop = h * 0.45;
       const waterBot = h;
       const waterH = waterBot - waterTop;
       const cellW = w / GRID;
@@ -113,16 +113,16 @@ export default function WaterPool() {
       ctx.fillStyle = underGrad;
       ctx.fillRect(0, waterTop, w, waterH);
 
-      // 焦散光斑（水下投射）
+      // 焦散光斑（水下投射）— 降低阈值让效果可见
       for (let i = 0; i < N; i++) {
         for (let j = 0; j < N; j++) {
           const idx = i * N + j;
           const caustic = causticMap[idx];
-          if (caustic > 0.01) {
+          if (caustic > 0.002) {
             const cx = i * cellW;
             const cy = waterTop + j * cellH;
-            const alpha = Math.min(caustic * 1.5, 0.25);
-            const r = cellW * 1.5;
+            const alpha = Math.min(caustic * 8, 0.3);
+            const r = cellW * 2;
             const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
             g.addColorStop(0, `rgba(100,160,255,${alpha})`);
             g.addColorStop(1, 'rgba(0,0,0,0)');
@@ -133,18 +133,18 @@ export default function WaterPool() {
       }
 
       // 水面镜面反射线（波峰高光）
-      ctx.strokeStyle = 'rgba(180,210,255,0.15)';
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = 'rgba(180,220,255,0.2)';
+      ctx.lineWidth = 2;
       for (let i = 0; i < N - 1; i++) {
         for (let j = 0; j < N - 1; j++) {
           const idx = i * N + j;
           const hCur = h2[idx];
           const hNext = h2[idx + 1];
-          // 波峰处画高光线
-          if (hCur > 0.02 && hCur > hNext && hCur > h2[idx - 1]) {
+          // 波峰检测 — 降低阈值
+          if (hCur > 0.003 && hCur > hNext && hCur > h2[idx - 1]) {
             const x = i * cellW;
-            const y = waterTop + j * cellH + hCur * 40;
-            ctx.globalAlpha = Math.min(hCur * 15, 0.6);
+            const y = waterTop + j * cellH + hCur * 60;
+            ctx.globalAlpha = Math.min(hCur * 30, 0.7);
             ctx.beginPath();
             ctx.moveTo(x, y);
             ctx.lineTo(x + cellW, y);
