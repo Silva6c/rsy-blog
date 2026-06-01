@@ -1,7 +1,7 @@
 ---
-// ─── 首页 — 液态玻璃 ───
+// ─── 首页 — Canvas 液态流体 ───
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import LiquidBackground from '@/components/LiquidBackground.astro';
+import LiquidBackground from '@/components/LiquidBackground.tsx';
 import { SITE_NAME, SITE_TAGLINE, SITE_DESCRIPTION } from '@/lib/constants';
 ---
 
@@ -10,7 +10,7 @@ import { SITE_NAME, SITE_TAGLINE, SITE_DESCRIPTION } from '@/lib/constants';
   description={SITE_DESCRIPTION}
   hideBackground
 >
-  <LiquidBackground />
+  <LiquidBackground client:load />
 
   <div class="relative flex min-h-[calc(100vh-180px)] items-center justify-center">
     <div class="text-center px-4">
