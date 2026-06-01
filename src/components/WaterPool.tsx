@@ -84,40 +84,75 @@ export default function WaterPool() {
     resize();
     window.addEventListener('resize', resize);
 
+    /* ── 获取当前主题 ── */
+    const getTheme = (): 'dark' | 'light' =>
+      document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    let currentTheme = getTheme();
+
     /* ── 画背景 ── */
     const drawBg = () => {
-      // 背景图片（cover 模式）
-      const img = bgImages[bgIndex];
-      if (img && img.complete) {
-        const iw = img.naturalWidth, ih = img.naturalHeight;
-        const scale = Math.max(w / iw, h / ih);
-        const sw = iw * scale, sh = ih * scale;
-        const sx = (w - sw) / 2, sy = (h - sh) / 2;
-        octx.drawImage(img, sx, sy, sw, sh);
-      } else {
-        // 图片未就绪时用深色底
-        octx.fillStyle = '#0d0b1a';
+      const theme = currentTheme;
+      if (theme === 'light') {
+        // 浅色模式 — 白色底
+        octx.fillStyle = '#f5f3fa';
         octx.fillRect(0, 0, w, h);
+        octx.fillStyle = 'rgba(99,102,241,0.04)';
+        octx.beginPath(); octx.arc(w * 0.3, h * 0.3, 200, 0, Math.PI * 2); octx.fill();
+        octx.fillStyle = 'rgba(168,85,247,0.03)';
+        octx.beginPath(); octx.arc(w * 0.7, h * 0.5, 180, 0, Math.PI * 2); octx.fill();
+        // 标题
+        const titleGrad = octx.createLinearGradient(0, 0, w, 0);
+        titleGrad.addColorStop(0, '#6366f1');
+        titleGrad.addColorStop(1, '#38bdf8');
+        octx.fillStyle = titleGrad;
+        octx.font = `bold ${Math.min(w * 0.08, 80)}px "Noto Serif SC", serif`;
+        octx.textAlign = 'center';
+        octx.fillText("RSY's 1st BLOG", w / 2, h * 0.55);
+        octx.fillStyle = 'rgba(0,0,0,0.4)';
+        octx.font = `${Math.min(w * 0.025, 24)}px "Inter","Noto Sans SC",sans-serif`;
+        octx.fillText('记录 · 思考 · 创造', w / 2, h * 0.55 + 50);
+        octx.textAlign = 'start';
+      } else {
+        // 深色模式 — 图片背景
+        const img = bgImages[bgIndex];
+        if (img && img.complete) {
+          const iw = img.naturalWidth, ih = img.naturalHeight;
+          const scale = Math.max(w / iw, h / ih);
+          const sw = iw * scale, sh = ih * scale;
+          const sx = (w - sw) / 2, sy = (h - sh) / 2;
+          octx.drawImage(img, sx, sy, sw, sh);
+        } else {
+          octx.fillStyle = '#0d0b1a';
+          octx.fillRect(0, 0, w, h);
+        }
+        // 暗色遮罩
+        octx.fillStyle = 'rgba(0,0,0,0.25)';
+        octx.fillRect(0, 0, w, h);
+        // 标题
+        const titleGrad = octx.createLinearGradient(0, 0, w, 0);
+        titleGrad.addColorStop(0, '#6366f1');
+        titleGrad.addColorStop(1, '#38bdf8');
+        octx.fillStyle = titleGrad;
+        octx.font = `bold ${Math.min(w * 0.08, 80)}px "Noto Serif SC", serif`;
+        octx.textAlign = 'center';
+        octx.fillText("RSY's 1st BLOG", w / 2, h * 0.55);
+        octx.fillStyle = 'rgba(255,255,255,0.55)';
+        octx.font = `${Math.min(w * 0.025, 24)}px "Inter","Noto Sans SC",sans-serif`;
+        octx.fillText('记录 · 思考 · 创造', w / 2, h * 0.55 + 50);
+        octx.textAlign = 'start';
       }
-      // 暗色遮罩（让上方文字可读）
-      octx.fillStyle = 'rgba(0,0,0,0.25)';
-      octx.fillRect(0, 0, w, h);
-
-      // 标题 — 品牌渐变色
-      const titleGrad = octx.createLinearGradient(0, 0, w, 0);
-      titleGrad.addColorStop(0, '#6366f1');
-      titleGrad.addColorStop(1, '#38bdf8');
-      octx.fillStyle = titleGrad;
-      octx.font = `bold ${Math.min(w * 0.08, 80)}px "Noto Serif SC", serif`;
-      octx.textAlign = 'center';
-      octx.fillText("RSY's 1st BLOG", w / 2, h * 0.55);
-      octx.fillStyle = 'rgba(255,255,255,0.55)';
-      octx.font = `${Math.min(w * 0.025, 24)}px "Inter","Noto Sans SC",sans-serif`;
-      octx.fillText('记录 · 思考 · 创造', w / 2, h * 0.55 + 50);
-      octx.textAlign = 'start';
     };
     drawBg();
     window.addEventListener('resize', drawBg);
+    // 监听主题切换
+    const themeObserver = new MutationObserver(() => {
+      const newTheme = getTheme();
+      if (newTheme !== currentTheme) {
+        currentTheme = newTheme;
+        drawBg();
+      }
+    });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
     /* ── 鼠标 → 涟漪 + Z倾斜 ── */
     const onMouse = (mx: number, my: number) => {
@@ -280,11 +315,19 @@ export default function WaterPool() {
       ctx.lineTo(0, h);
       ctx.closePath();
       // 渐变填充（从上到下）
+      const isLight = currentTheme === 'light';
       const waterGrad = ctx.createLinearGradient(0, wlBase - 10, 0, h);
-      waterGrad.addColorStop(0, 'rgba(160,210,240,0.24)');
-      waterGrad.addColorStop(0.2, 'rgba(130,190,230,0.60)');
-      waterGrad.addColorStop(0.6, 'rgba(80,140,210,1.0)');
-      waterGrad.addColorStop(1, 'rgba(40,80,160,1.0)');
+      if (isLight) {
+        waterGrad.addColorStop(0, 'rgba(160,210,240,0.15)');
+        waterGrad.addColorStop(0.3, 'rgba(130,190,230,0.35)');
+        waterGrad.addColorStop(0.7, 'rgba(80,140,210,0.55)');
+        waterGrad.addColorStop(1, 'rgba(40,80,160,0.75)');
+      } else {
+        waterGrad.addColorStop(0, 'rgba(160,210,240,0.24)');
+        waterGrad.addColorStop(0.2, 'rgba(130,190,230,0.60)');
+        waterGrad.addColorStop(0.6, 'rgba(80,140,210,1.0)');
+        waterGrad.addColorStop(1, 'rgba(40,80,160,1.0)');
+      }
       ctx.fillStyle = waterGrad;
       ctx.fill();
       ctx.restore();
@@ -299,7 +342,7 @@ export default function WaterPool() {
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
-      ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+      ctx.strokeStyle = isLight ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.45)';
       ctx.lineWidth = 2.5;
       ctx.stroke();
 
@@ -349,6 +392,7 @@ export default function WaterPool() {
       cancelAnimationFrame(animId);
       clearInterval(bgTimer);
       observer.disconnect();
+      themeObserver.disconnect();
       window.removeEventListener('mousemove', onMM);
       window.removeEventListener('touchmove', onTouch);
       window.removeEventListener('resize', resize);
