@@ -290,11 +290,11 @@ export default function WaterPool() {
         if (mt.y >= impactY && mt.vy > 0) {
           // 巨量冲击波
           const ix = Math.round(clamp(mt.x / w, 0, 1) * WX);
-          rippleAt(state, ix, 0, 4, 20);
-          rippleAt(state, ix, 5, 2, 14);
-          for (let p = 0; p < 10; p++) rippleAt(state, Math.round(Math.random()*WX), Math.floor(Math.random()*6), 1+Math.random()*2, 8+Math.random()*8);
-          // 水面狂暴短暂激活
-          rageEnd = performance.now() + 3000;
+          rippleAt(state, ix, 0, 8, 30);  // 主冲击
+          rippleAt(state, ix, 3, 5, 22);  // 次级
+          rippleAt(state, ix, 8, 3, 16);  // 深层
+          for (let p = 0; p < 20; p++) rippleAt(state, Math.round(Math.random()*WX), Math.floor(Math.random()*10), 1.5+Math.random()*3, 10+Math.random()*12);
+          rageEnd = performance.now() + 5000;
           mt.alive = false;
         }
 
@@ -303,13 +303,13 @@ export default function WaterPool() {
         for (let i = 0; i < mt.trail.length; i++) {
           const t = mt.trail[i];
           const alpha = i / mt.trail.length * 0.6;
-          ctx.fillStyle = `rgba(255,180,80,${alpha})`;
-          ctx.beginPath(); ctx.arc(t.x, t.y, 2 + i * 0.3, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = `rgba(255,160,30,${alpha})`;
+          ctx.beginPath(); ctx.arc(t.x, t.y, 4 + i * 0.5, 0, Math.PI * 2); ctx.fill();
         }
-        // 陨石本体
-        const grad = ctx.createRadialGradient(mt.x, mt.y, 0, mt.x, mt.y, 14);
-        grad.addColorStop(0, '#fff'); grad.addColorStop(0.3, '#fbbf24'); grad.addColorStop(1, 'rgba(239,68,68,0)');
-        ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(mt.x, mt.y, 14, 0, Math.PI * 2); ctx.fill();
+        // 陨石本体 — 加大
+        const grad = ctx.createRadialGradient(mt.x, mt.y, 0, mt.x, mt.y, 40);
+        grad.addColorStop(0, '#fff'); grad.addColorStop(0.2, '#fef3c7'); grad.addColorStop(0.5, '#f59e0b'); grad.addColorStop(1, 'rgba(220,38,38,0)');
+        ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(mt.x, mt.y, 40, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
       }
 
