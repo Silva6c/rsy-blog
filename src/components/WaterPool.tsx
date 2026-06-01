@@ -174,27 +174,40 @@ export default function WaterPool() {
       const iw_px = imageData.width;
       const ih_px = imageData.height;
 
+      // 预计算每列的水面线 Y（避免重复算）
+      const waterlineByX: number[] = [];
+      for (let px = 0; px < iw_px; px++) {
+        const iCell = Math.round((px / iw_px) * WX);
+        waterlineByX[px] = wlBase + h2[clamp(iCell, 0, NX - 1) * NZ + 0] * 12;
+      }
+
       for (let py = 0; py < ih_px; py++) {
-        // 当前像素对应的波场索引
         const screenY = topY + py;
-        // Z坐标：距水面线越远 = 水体越深 = Z值越大
-        const zFrac = clamp((screenY - wlBase) / (h - wlBase), 0, 1);
-        const jCell = Math.round(zFrac * WZ);
 
         for (let px = 0; px < iw_px; px++) {
-          const iCell = Math.round((px / iw_px) * WX);
-          const idx = clamp(iCell, 0, NX - 1) * NZ + clamp(jCell, 0, NZ - 1);
+          const di = (py * iw_px + px) * 4;
 
-          // 梯度（含边界处理）
+          // 像素在水面以上 → 不折射，直接拷贝
+          if (screenY < waterlineByX[px]) {
+            const si = di;
+            data[di] = sdata[si];
+            data[di + 1] = sdata[si + 1];
+            data[di + 2] = sdata[si + 2];
+            data[di + 3] = 255;
+            continue;
+          }
+
+          // 像素在水中 → 计算折射
+          const iCell = Math.round((px / iw_px) * WX);
+          const zFrac = clamp((screenY - wlBase) / (h - wlBase), 0, 1);
+          const jCell = Math.round(zFrac * WZ);
+
           const il = clamp(iCell - 1, 0, NX - 1), ir = clamp(iCell + 1, 0, NX - 1);
           const jl = clamp(jCell - 1, 0, NZ - 1), jr = clamp(jCell + 1, 0, NZ - 1);
           const ddx = il !== ir ? (h1[ir * NZ + jCell] - h1[il * NZ + jCell]) / (ir - il) : 0;
           const ddz = jl !== jr ? (h1[iCell * NZ + jr] - h1[iCell * NZ + jl]) / (jr - jl) : 0;
-
-          // Z倾斜叠加到Z梯度
           const effectiveDz = ddz + zTilt * 0.005 * zFrac;
 
-          // 折射偏移
           const offX = ddx * REFRACT_X * w * 0.005;
           const offY = effectiveDz * REFRACT_Z * 1.5;
 
@@ -204,7 +217,6 @@ export default function WaterPool() {
           const csy = clamp(sy, 0, ih_px - 1);
 
           const si = (csy * iw_px + csx) * 4;
-          const di = (py * iw_px + px) * 4;
           data[di] = sdata[si];
           data[di + 1] = sdata[si + 1];
           data[di + 2] = sdata[si + 2];
