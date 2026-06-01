@@ -76,10 +76,10 @@ export default function WaterGlass() {
     top.position.set(0, 5, 0);
     scene.add(top);
 
-    // ─── 环境贴图（transmission 依赖） ───
+    // ─── 环境贴图（亮色 → 玻璃表面可见高光反射） ───
     const pmrem = new THREE.PMREMGenerator(renderer);
     const envScene = new THREE.Scene();
-    envScene.background = new THREE.Color('#2a2045');
+    envScene.background = new THREE.Color('#d0ddf8');   // 亮蓝灰色，非暗紫
     scene.environment = pmrem.fromScene(envScene).texture;
     scene.background = new THREE.Color('#0d0b1a');
 
@@ -96,15 +96,15 @@ export default function WaterGlass() {
     const glassGeom = new THREE.LatheGeometry(PROFILE, 72);
     const glassMat = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color('#ffffff'),
-      metalness: 0,
-      roughness: 0.02,         // 极低粗糙度 → 清晰高光
+      metalness: 0.05,         // 微金属感增强边缘可见
+      roughness: 0.02,
       transmission: 1,
       ior: 1.5,
       thickness: 0.6,
       transparent: true,
       opacity: 1,
-      envMapIntensity: 0.8,
-      specularIntensity: 1,
+      envMapIntensity: 1.0,    // 增强环境反射
+      specularIntensity: 1.2,
     });
     const glass = new THREE.Mesh(glassGeom, glassMat);
     scene.add(glass);
