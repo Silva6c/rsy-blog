@@ -168,8 +168,8 @@ export default function WaterPool() {
       for (let i = 0; i <= WX; i++) { const x = i * (w / WX); const wy = wlx[Math.round(i * (iw - 1) / WX) ?? 0]; i === 0 ? ctx.moveTo(x, wy) : ctx.lineTo(x, wy); }
       ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath();
       const wg = ctx.createLinearGradient(0, baseY - 10, 0, h);
-      if (lt) { wg.addColorStop(0,'rgba(160,210,240,0.15)'); wg.addColorStop(0.3,'rgba(130,190,230,0.35)'); wg.addColorStop(0.7,'rgba(80,140,210,0.55)'); wg.addColorStop(1,'rgba(40,80,160,0.75)'); }
-      else { wg.addColorStop(0,'rgba(160,210,240,0.24)'); wg.addColorStop(0.2,'rgba(130,190,230,0.60)'); wg.addColorStop(0.6,'rgba(80,140,210,1.0)'); wg.addColorStop(1,'rgba(40,80,160,1.0)'); }
+      if (lt) { wg.addColorStop(0,'rgba(160,210,240,0.11)'); wg.addColorStop(0.3,'rgba(130,190,230,0.25)'); wg.addColorStop(0.7,'rgba(80,140,210,0.39)'); wg.addColorStop(1,'rgba(40,80,160,0.53)'); }
+      else { wg.addColorStop(0,'rgba(160,210,240,0.17)'); wg.addColorStop(0.2,'rgba(130,190,230,0.42)'); wg.addColorStop(0.6,'rgba(80,140,210,0.7)'); wg.addColorStop(1,'rgba(40,80,160,0.7)'); }
       ctx.fillStyle = wg; ctx.fill(); ctx.restore();
 
       ctx.beginPath();
