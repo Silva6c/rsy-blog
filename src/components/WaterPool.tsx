@@ -83,18 +83,39 @@ export default function WaterPool() {
     floor.position.y = -3.0;
     scene.add(floor);
 
-    // 地平线光晕（水面远端的微光边界）
+    // 天际线光晕 — 水面远端 + 上方天空渐变
     const glowGeom = new THREE.PlaneGeometry(size, 1.5);
     const glowMat = new THREE.MeshBasicMaterial({
       color: new THREE.Color('#8899dd'),
       transparent: true,
-      opacity: 0.15,
+      opacity: 0.12,
       side: THREE.DoubleSide,
     });
     const glow = new THREE.Mesh(glowGeom, glowMat);
     glow.position.set(0, -1.5, -half + 0.5);
     glow.rotation.x = -Math.PI / 3;
     scene.add(glow);
+
+    // 天空渐变面（水面上方淡蓝过渡）
+    const skyGeom = new THREE.PlaneGeometry(size, 3);
+    const skyMat = new THREE.ShaderMaterial({
+      uniforms: {},
+      vertexShader: `
+        varying vec2 vUv;
+        void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
+      `,
+      fragmentShader: `
+        varying vec2 vUv;
+        void main() {
+          float t = 1.0 - vUv.y;
+          gl_FragColor = vec4(mix(vec3(0.05,0.04,0.1), vec3(0.15,0.2,0.4), t*t), t*0.3);
+        }
+      `,
+    });
+    const sky = new THREE.Mesh(skyGeom, skyMat);
+    sky.position.set(0, 2, -half + 0.5);
+    sky.rotation.x = -Math.PI / 4;
+    scene.add(sky);
 
     // ─── 高度场 ───
     // 三缓冲区：前一帧 / 当前 / 后一帧
@@ -137,6 +158,12 @@ export default function WaterPool() {
       }
     };
     window.addEventListener('mousemove', onMouse);
+    // 触摸支持
+    window.addEventListener('touchmove', (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        onMouse({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY } as MouseEvent);
+      }
+    });
 
     // ─── 动画循环 ───
     let animId = 0, lastT = performance.now();
@@ -214,10 +241,10 @@ export default function WaterPool() {
       window.removeEventListener('mousemove', onMouse);
       window.removeEventListener('resize', resize);
       renderer.dispose();
-      geom.dispose();
-      mat.dispose();
-      floorGeom.dispose();
-      floorMat.dispose();
+      geom.dispose(); mat.dispose();
+      floorGeom.dispose(); floorMat.dispose();
+      glowGeom.dispose(); glowMat.dispose();
+      skyGeom.dispose(); skyMat.dispose();
       container.removeChild(renderer.domElement);
     };
   }, []);
