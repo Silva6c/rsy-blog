@@ -138,7 +138,27 @@ export default function WaterPool() {
     };
     window.addEventListener('click', onWindowClick);
 
-    // ② Konami Code — 用 e.key 而非废弃的 keyCode
+    // ③ 陨石撞击（03_dark.png 时点击水面触发）
+    const METEOR_IMG_IDX = 2; // 03_dark.png
+    type Meteor = { x: number; y: number; vx: number; vy: number; trail: {x:number;y:number}[]; alive: boolean };
+    let meteor: Meteor | null = null;
+    const onWindowClick2 = (e: MouseEvent) => {
+      // 只有当前图片是 03_dark.png 且点击在水面以下
+      if (bgIdx % 6 !== METEOR_IMG_IDX) return;
+      if (e.clientY < wlY()) return;
+      if (meteor?.alive) return; // 已有陨石
+      // 从左上或右上飞来
+      const fromLeft = Math.random() > 0.5;
+      meteor = {
+        x: fromLeft ? -80 : w + 80,
+        y: -80,
+        vx: fromLeft ? 10 + Math.random() * 6 : -(10 + Math.random() * 6),
+        vy: 4 + Math.random() * 3,
+        trail: [],
+        alive: true,
+      };
+    };
+    window.addEventListener('click', onWindowClick2);
     const konamiKeys = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
     let konamiIdx = 0;
     const onKey = (e: KeyboardEvent) => {
@@ -257,6 +277,42 @@ export default function WaterPool() {
       gg.addColorStop(0,'rgba(100,150,220,0)'); gg.addColorStop(0.5,'rgba(100,150,220,0.25)'); gg.addColorStop(1,'rgba(100,150,220,0)');
       ctx.fillStyle=gg; ctx.fill(); ctx.restore();
 
+      // 彩蛋：陨石
+      if (meteor?.alive) {
+        const mt = meteor;
+        mt.trail.push({ x: mt.x, y: mt.y });
+        if (mt.trail.length > 30) mt.trail.shift();
+        mt.x += mt.vx; mt.y += mt.vy;
+        mt.vy += 0.15; // 重力
+
+        // 撞击水面检测
+        const impactY = wlY() + waterlineAt(state, Math.round(clamp(mt.x / w, 0, 1) * WX)) * 12;
+        if (mt.y >= impactY && mt.vy > 0) {
+          // 巨量冲击波
+          const ix = Math.round(clamp(mt.x / w, 0, 1) * WX);
+          rippleAt(state, ix, 0, 4, 20);
+          rippleAt(state, ix, 5, 2, 14);
+          for (let p = 0; p < 10; p++) rippleAt(state, Math.round(Math.random()*WX), Math.floor(Math.random()*6), 1+Math.random()*2, 8+Math.random()*8);
+          // 水面狂暴短暂激活
+          rageEnd = performance.now() + 3000;
+          mt.alive = false;
+        }
+
+        // 绘制拖尾
+        ctx.save();
+        for (let i = 0; i < mt.trail.length; i++) {
+          const t = mt.trail[i];
+          const alpha = i / mt.trail.length * 0.6;
+          ctx.fillStyle = `rgba(255,180,80,${alpha})`;
+          ctx.beginPath(); ctx.arc(t.x, t.y, 2 + i * 0.3, 0, Math.PI * 2); ctx.fill();
+        }
+        // 陨石本体
+        const grad = ctx.createRadialGradient(mt.x, mt.y, 0, mt.x, mt.y, 14);
+        grad.addColorStop(0, '#fff'); grad.addColorStop(0.3, '#fbbf24'); grad.addColorStop(1, 'rgba(239,68,68,0)');
+        ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(mt.x, mt.y, 14, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+
       // 彩蛋：Konami 粒子
       for (const p of konamiParticles) {
         p.x += p.vx; p.y += p.vy; p.life -= 0.015; p.vy += 0.05;
@@ -281,6 +337,7 @@ export default function WaterPool() {
       window.removeEventListener('deviceorientation', onGyro);
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('click', onWindowClick);
+      window.removeEventListener('click', onWindowClick2);
       window.removeEventListener('resize', resize); window.removeEventListener('resize', drawBg);
     };
   }, []);
