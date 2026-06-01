@@ -126,12 +126,17 @@ export default function WaterPool() {
       const dt = Math.min((now - lastT) / 1000, 0.05);
       lastT = now;
 
-      // 1. 二维波方程时间步
+      // 1. 二维波方程（含 z=0 和 z=NZ-1 反射边界）
       const c = WAVE_C;
       for (let i = 1; i < NX - 1; i++) {
-        for (let j = 1; j < NZ - 1; j++) {
+        for (let j = 0; j < NZ; j++) {
           const idx = i * NZ + j;
-          const lap = h1[idx - NZ] + h1[idx + NZ] + h1[idx - 1] + h1[idx + 1] - 4 * h1[idx];
+          // X 邻居
+          const xp = h1[idx - NZ], xn = h1[idx + NZ];
+          // Z 邻居 — 反射边界：z=0→镜像z=1, z=NZ-1→镜像z=NZ-2
+          const zp = j > 0 ? h1[idx - 1] : h1[idx + 1];
+          const zn = j < NZ - 1 ? h1[idx + 1] : h1[idx - 1];
+          const lap = xp + xn + zp + zn - 4 * h1[idx];
           h2[idx] = (2 * h1[idx] - h0[idx] + c * lap) * DAMPING;
         }
       }
@@ -180,15 +185,17 @@ export default function WaterPool() {
           const iCell = Math.round((px / iw_px) * WX);
           const idx = clamp(iCell, 0, NX - 1) * NZ + clamp(jCell, 0, NZ - 1);
 
-          // 梯度 → 法线
-          const dx = iCell > 0 && iCell < NX - 1 ? (h1[(iCell + 1) * NZ + jCell] - h1[(iCell - 1) * NZ + jCell]) : 0;
-          const dz = jCell > 0 && jCell < NZ - 1 ? (h1[iCell * NZ + jCell + 1] - h1[iCell * NZ + jCell - 1]) : 0;
+          // 梯度（含边界处理）
+          const il = clamp(iCell - 1, 0, NX - 1), ir = clamp(iCell + 1, 0, NX - 1);
+          const jl = clamp(jCell - 1, 0, NZ - 1), jr = clamp(jCell + 1, 0, NZ - 1);
+          const ddx = il !== ir ? (h1[ir * NZ + jCell] - h1[il * NZ + jCell]) / (ir - il) : 0;
+          const ddz = jl !== jr ? (h1[iCell * NZ + jr] - h1[iCell * NZ + jl]) / (jr - jl) : 0;
 
           // Z倾斜叠加到Z梯度
-          const effectiveDz = dz + zTilt * 0.005 * zFrac;
+          const effectiveDz = ddz + zTilt * 0.005 * zFrac;
 
           // 折射偏移
-          const offX = dx * REFRACT_X * w * 0.005;
+          const offX = ddx * REFRACT_X * w * 0.005;
           const offY = effectiveDz * REFRACT_Z * 1.5;
 
           const sx = Math.round(px + offX);
@@ -221,7 +228,7 @@ export default function WaterPool() {
       for (let i = 0; i <= WX; i++) {
         const x = i * segW;
         const waveH = h2[i * NZ + 0];   // z=0 前壁处
-        const y = wlBase + waveH * 30;
+        const y = wlBase + waveH * 50;
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
