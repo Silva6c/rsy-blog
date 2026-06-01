@@ -60,12 +60,12 @@ const pageDescription = description ?? SITE_DESCRIPTION;
       (function () {
         const mode = localStorage.getItem('theme-mode');
         if (mode === 'auto') {
-          // auto 模式不设 data-theme，走系统偏好
-          document.documentElement.removeAttribute('data-theme');
+          var h = new Date().getHours();
+          document.documentElement.setAttribute('data-theme', (h >= 6 && h < 18) ? 'light' : 'dark');
+          document.documentElement.setAttribute('data-theme-mode', 'auto');
         } else if (mode === 'light' || mode === 'dark') {
           document.documentElement.setAttribute('data-theme', mode);
         } else {
-          // 无存储时默认深色
           document.documentElement.setAttribute('data-theme', 'dark');
         }
       })();
