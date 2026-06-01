@@ -38,29 +38,21 @@ export default function WaterPool() {
 
     // ─── 画背景到离屏 Canvas ───
     const drawBackground = () => {
-      // 渐变底
-      const grad = octx.createLinearGradient(0, 0, 0, h);
-      grad.addColorStop(0, '#0d0b1a');
-      grad.addColorStop(0.4, '#1a1145');
-      grad.addColorStop(0.7, '#0d1b3e');
-      grad.addColorStop(1, '#0a0a18');
-      octx.fillStyle = grad;
+      // 白色底
+      octx.fillStyle = '#ffffff';
       octx.fillRect(0, 0, w, h);
-      // 装饰光斑
-      octx.fillStyle = 'rgba(99,102,241,0.06)';
+      // 浅灰装饰圆
+      octx.fillStyle = 'rgba(0,0,0,0.03)';
       octx.beginPath(); octx.arc(w * 0.3, h * 0.3, 200, 0, Math.PI * 2); octx.fill();
-      octx.fillStyle = 'rgba(168,85,247,0.04)';
+      octx.fillStyle = 'rgba(0,0,0,0.02)';
       octx.beginPath(); octx.arc(w * 0.7, h * 0.5, 180, 0, Math.PI * 2); octx.fill();
       // 标题
-      octx.fillStyle = '#ffffff';
+      octx.fillStyle = '#111111';
       octx.font = `bold ${Math.min(w * 0.08, 80)}px "Noto Serif SC", serif`;
       octx.textAlign = 'center';
-      octx.shadowColor = 'rgba(99,102,241,0.4)';
-      octx.shadowBlur = 40;
       octx.fillText("RSY's 1st BLOG", w / 2, h * 0.35);
-      octx.shadowBlur = 0;
       // tagline
-      octx.fillStyle = 'rgba(200,210,240,0.6)';
+      octx.fillStyle = 'rgba(0,0,0,0.4)';
       octx.font = `${Math.min(w * 0.025, 24)}px "Inter","Noto Sans SC",sans-serif`;
       octx.fillText('记录 · 思考 · 创造', w / 2, h * 0.35 + 50);
       octx.textAlign = 'start';
@@ -151,7 +143,7 @@ export default function WaterPool() {
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
-      ctx.strokeStyle = 'rgba(180,210,255,0.35)';
+      ctx.strokeStyle = 'rgba(0,0,0,0.2)';
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
@@ -162,7 +154,8 @@ export default function WaterPool() {
           const y = wlBase + w2[i] * 35;
           const alpha = Math.min(w2[i] * 40, 0.5);
           const g = ctx.createRadialGradient(x, y, 0, x, y, 8);
-          g.addColorStop(0, `rgba(255,255,255,${alpha})`);
+          g.addColorStop(0, `rgba(255,255,255,${alpha * 1.5})`);
+          g.addColorStop(0.5, `rgba(200,220,255,${alpha})`);
           g.addColorStop(1, 'rgba(0,0,0,0)');
           ctx.fillStyle = g;
           ctx.fillRect(x - 10, y - 10, 20, 20);
