@@ -85,7 +85,7 @@ export default function WaterPool() {
     window.addEventListener('resize', drawBg);
     const themeObs = new MutationObserver(() => { const t = theme(); if (t !== curTheme) { curTheme = t; drawBg(); } });
     themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-    const bgTimer = setInterval(() => { bgIdx++; drawBg(); }, 30000);
+    const bgTimer = setInterval(() => { bgIdx++; drawBg(); }, 15000);
 
     /* ── 鼠标 ── */
     const wlY = () => h * 0.45;
