@@ -213,14 +213,30 @@ export default function WaterPool() {
       }
       ctx.putImageData(imageData, 0, topY);
 
-      // 5. 蓝色水体渐变覆盖（表面淡，底部深）
-      const waterGrad = ctx.createLinearGradient(0, wlBase, 0, h);
-      waterGrad.addColorStop(0, 'rgba(160,210,240,0.08)');
-      waterGrad.addColorStop(0.3, 'rgba(130,190,230,0.18)');
-      waterGrad.addColorStop(0.7, 'rgba(80,140,210,0.28)');
-      waterGrad.addColorStop(1, 'rgba(40,80,160,0.40)');
+      // 5. 蓝色水体 — 跟随水面线曲线填充
+      ctx.save();
+      ctx.beginPath();
+      const segW2 = w / WX;
+      // 沿水面线从左到右
+      for (let i = 0; i <= WX; i++) {
+        const x = i * segW2;
+        const wy = wlBase + h2[i * NZ + 0] * 12;
+        if (i === 0) ctx.moveTo(x, wy);
+        else ctx.lineTo(x, wy);
+      }
+      // 向下到屏幕底，再闭合
+      ctx.lineTo(w, h);
+      ctx.lineTo(0, h);
+      ctx.closePath();
+      // 渐变填充（从上到下）
+      const waterGrad = ctx.createLinearGradient(0, wlBase - 10, 0, h);
+      waterGrad.addColorStop(0, 'rgba(160,210,240,0.06)');
+      waterGrad.addColorStop(0.2, 'rgba(130,190,230,0.15)');
+      waterGrad.addColorStop(0.6, 'rgba(80,140,210,0.25)');
+      waterGrad.addColorStop(1, 'rgba(40,80,160,0.38)');
       ctx.fillStyle = waterGrad;
-      ctx.fillRect(0, wlBase, w, h - wlBase);
+      ctx.fill();
+      ctx.restore();
 
       // 6. 水面线 h(x, z=0)
       const segW = w / WX;
@@ -228,7 +244,7 @@ export default function WaterPool() {
       for (let i = 0; i <= WX; i++) {
         const x = i * segW;
         const waveH = h2[i * NZ + 0];   // z=0 前壁处
-        const y = wlBase + waveH * 50;
+        const y = wlBase + waveH * 12;
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
