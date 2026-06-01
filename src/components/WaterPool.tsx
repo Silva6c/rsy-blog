@@ -124,6 +124,56 @@ export default function WaterPool() {
     window.addEventListener('mousemove', onMM);
     window.addEventListener('touchmove', onTouch);
 
+    /* ── 彩蛋状态 ── */
+    // ① 水面线7连击
+    let clickCount = 0, clickTimer = 0;
+    const onCanvasClick = (e: MouseEvent) => {
+      const wy = wlY() + waterlineAt(state, Math.round((e.clientX / w) * WX)) * 12;
+      if (Math.abs(e.clientY - wy) < 25) {
+        clickCount++;
+        clearTimeout(clickTimer);
+        clickTimer = window.setTimeout(() => { clickCount = 0; }, 2000);
+        if (clickCount >= 7) { clickCount = 0; triggerRage(); }
+      }
+    };
+    canvas.addEventListener('click', onCanvasClick);
+
+    // ② Konami Code
+    const konami = [38,38,40,40,37,39,37,39,66,65];
+    let konamiIdx = 0;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.keyCode === konami[konamiIdx]) { konamiIdx++; if (konamiIdx === konami.length) { konamiIdx = 0; triggerKonami(); } }
+      else { konamiIdx = 0; }
+    };
+    window.addEventListener('keydown', onKey);
+
+    // ③ 双击小鱼
+    let fishX = -1, fishY = 0, fishAlpha = 0, fishDir = 1;
+    const onDblClick = (e: MouseEvent) => {
+      if (e.clientY < wlY()) return;
+      fishX = e.clientX; fishY = e.clientY; fishAlpha = 1; fishDir = Math.random() > 0.5 ? 1 : -1;
+    };
+    canvas.addEventListener('dblclick', onDblClick);
+
+    // 彩蛋触发
+    let rageEnd = 0;
+    function triggerRage() {
+      rageEnd = performance.now() + 5000;
+      // 剧烈晃荡：随机强脉冲
+      for (let p = 0; p < 20; p++) {
+        rippleAt(state, Math.floor(Math.random() * WX), 0, 1.5 + Math.random() * 2, 12);
+      }
+    }
+    let konamiParticles: {x:number;y:number;vx:number;vy:number;life:number;c:string}[] = [];
+    function triggerKonami() {
+      for (let i = 0; i < 120; i++) {
+        konamiParticles.push({
+          x: w/2, y: h/2, vx: (Math.random()-0.5)*8, vy: (Math.random()-0.5)*8,
+          life: 1, c: ['#6366f1','#a855f7','#06b6d4','#ec4899','#facc15'][Math.floor(Math.random()*5)]
+        });
+      }
+    }
+
     /* ── 陀螺仪 ── */
     let gyroG = 0, gyroB = 0;
     const onGyro = (e: DeviceOrientationEvent) => {
@@ -153,6 +203,12 @@ export default function WaterPool() {
       stepWaves(state, PARAMS);
       stepTilt(state, PARAMS, dt);
       microPerturb(state);
+
+      // 彩蛋：rage 模式持续注能
+      if (performance.now() < rageEnd) {
+        if (Math.random() < 0.5) rippleAt(state, Math.floor(Math.random() * WX), 0, 0.8 + Math.random(), 8);
+        state.zTiltTarget = Math.sin(performance.now() * 0.01) * 30;
+      }
 
       ctx.drawImage(offscreen, 0, 0);
 
@@ -207,6 +263,31 @@ export default function WaterPool() {
       gg.addColorStop(0,'rgba(100,150,220,0)'); gg.addColorStop(0.5,'rgba(100,150,220,0.25)'); gg.addColorStop(1,'rgba(100,150,220,0)');
       ctx.fillStyle=gg; ctx.fill(); ctx.restore();
 
+      // 彩蛋：小鱼
+      if (fishAlpha > 0) {
+        fishX += fishDir * 2;
+        fishAlpha -= 0.008;
+        ctx.save(); ctx.globalAlpha = fishAlpha;
+        ctx.translate(fishX, fishY);
+        ctx.scale(fishDir, 1);
+        ctx.fillStyle = '#111';
+        ctx.beginPath();
+        ctx.moveTo(15, 0); ctx.lineTo(-15, -10); ctx.lineTo(-10, 0);
+        ctx.lineTo(-15, 10); ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 彩蛋：Konami 粒子
+      for (const p of konamiParticles) {
+        p.x += p.vx; p.y += p.vy; p.life -= 0.015; p.vy += 0.05;
+        if (p.life <= 0) continue;
+        ctx.fillStyle = p.c; ctx.globalAlpha = p.life;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      konamiParticles = konamiParticles.filter(p => p.life > 0);
+
       swapBuffers(state);
     };
     render();
@@ -219,6 +300,9 @@ export default function WaterPool() {
       obs.disconnect(); themeObs.disconnect();
       window.removeEventListener('mousemove', onMM); window.removeEventListener('touchmove', onTouch);
       window.removeEventListener('deviceorientation', onGyro);
+      window.removeEventListener('keydown', onKey);
+      canvas.removeEventListener('click', onCanvasClick);
+      canvas.removeEventListener('dblclick', onDblClick);
       window.removeEventListener('resize', resize); window.removeEventListener('resize', drawBg);
     };
   }, []);
