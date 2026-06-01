@@ -230,10 +230,10 @@ export default function WaterPool() {
       ctx.closePath();
       // 渐变填充（从上到下）
       const waterGrad = ctx.createLinearGradient(0, wlBase - 10, 0, h);
-      waterGrad.addColorStop(0, 'rgba(160,210,240,0.06)');
-      waterGrad.addColorStop(0.2, 'rgba(130,190,230,0.15)');
-      waterGrad.addColorStop(0.6, 'rgba(80,140,210,0.25)');
-      waterGrad.addColorStop(1, 'rgba(40,80,160,0.38)');
+      waterGrad.addColorStop(0, 'rgba(160,210,240,0.24)');
+      waterGrad.addColorStop(0.2, 'rgba(130,190,230,0.60)');
+      waterGrad.addColorStop(0.6, 'rgba(80,140,210,1.0)');
+      waterGrad.addColorStop(1, 'rgba(40,80,160,1.0)');
       ctx.fillStyle = waterGrad;
       ctx.fill();
       ctx.restore();
