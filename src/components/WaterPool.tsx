@@ -1,42 +1,27 @@
-// ─── 水族馆水壁 — 三维波场 + 法线折射 ───
-// h(x,z) 高度场：X=屏幕宽 Z=纵深。波在X-Z面传播。
-// 折射由 ∂h/∂x 和 ∂h/∂z 共同决定。
+// ─── 水族馆水壁 — React 胶水层 ───
+// 水体物理引擎在 water-engine.ts
 
 import { useEffect, useRef } from 'react';
+import {
+  createWaterState, stepWaves, stepTilt, swapBuffers,
+  rippleAt, microPerturb, gradient, waterlineAt,
+  type WaterParams,
+} from '@/lib/water-engine';
 
-/* ── 波场参数 ── */
-const WX = 200;               // X 方向采样数
-const WZ = 40;                // Z 方向采样数
-const WAVE_C = 0.15;          // 波速
-const DAMPING = 0.98;         // 阻尼
+/* ── 参数 ── */
+const PARAMS: WaterParams = {
+  wx: 200, wz: 40, waveC: 0.15, damping: 0.98,
+  refractX: 2.2, refractZ: 0.8, tiltK: 8, tiltD: 3.5,
+};
+const WX = PARAMS.wx, WZ = PARAMS.wz;
+const NX = WX + 1, NZ = WZ + 1;
 
-/* ── 折射参数 ── */
-const REFRACT_X = 2.2;        // X梯度→水平偏移系数
-const REFRACT_Z = 0.8;        // Z梯度→垂直偏移系数
-
-/* ── 弹簧参数（整体倾斜） ── */
-const TILT_K = 8;
-const TILT_D = 3.5;
-
-/* ── 背景图片 ── */
+/* ── 图片 ── */
 const BASE = import.meta.env.BASE_URL;
-const BG_DARK = [
-  `${BASE}images/backgrounds/dark/01_dark.png`,
-  `${BASE}images/backgrounds/dark/02_dark.png`,
-  `${BASE}images/backgrounds/dark/03_dark.png`,
-  `${BASE}images/backgrounds/dark/04_dark.png`,
-  `${BASE}images/backgrounds/dark/05_dark.png`,
-  `${BASE}images/backgrounds/dark/06_dark.jpg`,
-];
-const BG_LIGHT = [
-  `${BASE}images/backgrounds/light/01_light.png`,
-  `${BASE}images/backgrounds/light/02_light.png`,
-  `${BASE}images/backgrounds/light/03_light.png`,
-  `${BASE}images/backgrounds/light/04_light.png`,
-  `${BASE}images/backgrounds/light/05_light.png`,
-  `${BASE}images/backgrounds/light/06_light.jpg`,
-];
-const BG_INTERVAL = 30000;
+const BG_DARK = [1,2,3,4,5].map(i => `${BASE}images/backgrounds/dark/0${i}_dark.png`).concat([`${BASE}images/backgrounds/dark/06_dark.jpg`]);
+const BG_LIGHT = [1,2,3,4,5].map(i => `${BASE}images/backgrounds/light/0${i}_light.png`).concat([`${BASE}images/backgrounds/light/06_light.jpg`]);
+
+const clamp = (v: number, lo: number, hi: number) => v < lo ? lo : v > hi ? hi : v;
 
 export default function WaterPool() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -47,381 +32,172 @@ export default function WaterPool() {
     const ctx = canvas.getContext('2d')!;
     let w = 0, h = 0, animId = 0;
 
-    /* ── 离屏背景 ── */
     const offscreen = document.createElement('canvas');
     const octx = offscreen.getContext('2d')!;
 
-    /* ── 三维波场 (WX+1) × (WZ+1) ── */
-    const NX = WX + 1, NZ = WZ + 1;
-    let h0 = new Float32Array(NX * NZ);
-    let h1 = new Float32Array(NX * NZ);
-    let h2 = new Float32Array(NX * NZ);
-
-    /* ── 背景图片 ── */
-    const darkImages: HTMLImageElement[] = [];
-    const lightImages: HTMLImageElement[] = [];
-    let bgIndex = 0;
-    // 预加载两套图
-    BG_DARK.forEach((url) => {
-      const img = new Image(); img.src = url; darkImages.push(img);
-    });
-    BG_LIGHT.forEach((url) => {
-      const img = new Image(); img.src = url; lightImages.push(img);
-    });
-    // 定时轮换
-    const bgTimer = setInterval(() => {
-      bgIndex = (bgIndex + 1) % BG_DARK.length;
-      drawBg();
-    }, BG_INTERVAL);
-
-    /* ── Z 倾斜状态 ── */
-    let zTilt = 0;
-    let zTiltVel = 0;
-    let zTiltTarget = 0;
+    const state = createWaterState(PARAMS);
     let lastMX = 0, lastMY = 0, lastT = performance.now();
 
-    const clamp = (v: number, lo: number, hi: number) => v < lo ? lo : v > hi ? hi : v;
+    /* ── 图片 ── */
+    const darkImgs: HTMLImageElement[] = BG_DARK.map(u => { const i = new Image(); i.src = u; return i; });
+    const lightImgs: HTMLImageElement[] = BG_LIGHT.map(u => { const i = new Image(); i.src = u; return i; });
+    let bgIdx = 0;
 
-    /* ── 尺寸 ── */
+    /* ── 主题 ── */
+    const theme = () => document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    let curTheme = theme();
+
     const resize = () => {
       w = canvas.width = window.innerWidth;
       h = canvas.height = window.innerHeight;
-      offscreen.width = w;
-      offscreen.height = h;
+      offscreen.width = w; offscreen.height = h;
     };
     resize();
     window.addEventListener('resize', resize);
 
-    /* ── 获取当前主题 ── */
-    const getTheme = (): 'dark' | 'light' =>
-      document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
-    let currentTheme = getTheme();
-
-    /* ── 画背景 ── */
+    /* ── 背景 ── */
     const drawBg = () => {
-      const isLight = currentTheme === 'light';
-      const images = isLight ? lightImages : darkImages;
-      const img = images[bgIndex % images.length];
-
-      if (img && img.complete) {
+      const lt = curTheme === 'light';
+      const imgs = lt ? lightImgs : darkImgs;
+      const img = imgs[bgIdx % imgs.length];
+      if (img?.complete) {
         const iw = img.naturalWidth, ih = img.naturalHeight;
-        const scale = Math.max(w / iw, h / ih);
-        const sw = iw * scale, sh = ih * scale;
-        const sx = (w - sw) / 2, sy = (h - sh) / 2;
-        octx.drawImage(img, sx, sy, sw, sh);
+        const s = Math.max(w / iw, h / ih);
+        octx.drawImage(img, (w - iw * s) / 2, (h - ih * s) / 2, iw * s, ih * s);
       } else {
-        octx.fillStyle = isLight ? '#f5f3fa' : '#0d0b1a';
+        octx.fillStyle = lt ? '#f5f3fa' : '#0d0b1a';
         octx.fillRect(0, 0, w, h);
       }
-
-      // 遮罩
-      octx.fillStyle = isLight ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.25)';
+      octx.fillStyle = lt ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.25)';
       octx.fillRect(0, 0, w, h);
-
-      // 标题
-      const titleGrad = octx.createLinearGradient(0, 0, w, 0);
-      titleGrad.addColorStop(0, '#6366f1');
-      titleGrad.addColorStop(1, '#38bdf8');
-      octx.fillStyle = titleGrad;
+      const g = octx.createLinearGradient(0, 0, w, 0);
+      g.addColorStop(0, '#6366f1'); g.addColorStop(1, '#38bdf8');
+      octx.fillStyle = g;
       octx.font = `bold ${Math.min(w * 0.08, 80)}px "Noto Serif SC", serif`;
       octx.textAlign = 'center';
       octx.fillText("RSY's 1st BLOG", w / 2, h * 0.55);
-      octx.fillStyle = isLight ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.55)';
+      octx.fillStyle = lt ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.55)';
       octx.font = `${Math.min(w * 0.025, 24)}px "Inter","Noto Sans SC",sans-serif`;
       octx.fillText('记录 · 思考 · 创造', w / 2, h * 0.55 + 50);
       octx.textAlign = 'start';
     };
     drawBg();
     window.addEventListener('resize', drawBg);
-    // 监听主题切换
-    const themeObserver = new MutationObserver(() => {
-      const newTheme = getTheme();
-      if (newTheme !== currentTheme) {
-        currentTheme = newTheme;
-        drawBg();
-      }
-    });
-    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    const themeObs = new MutationObserver(() => { const t = theme(); if (t !== curTheme) { curTheme = t; drawBg(); } });
+    themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    const bgTimer = setInterval(() => { bgIdx++; drawBg(); }, 30000);
 
-    /* ── 鼠标 → 涟漪 + Z倾斜 ── */
+    /* ── 鼠标 ── */
+    const wlY = () => h * 0.45;
     const onMouse = (mx: number, my: number) => {
-      const now = performance.now();
-      const dt = Math.min((now - lastT) / 1000, 0.1);
+      const now = performance.now(), dt = Math.min((now - lastT) / 1000, 0.1);
       if (dt <= 0) { lastT = now; lastMX = mx; lastMY = my; return; }
-      const vx = (mx - lastMX) / dt;
-      const vy = (my - lastMY) / dt;
+      const vx = (mx - lastMX) / dt, vy = (my - lastMY) / dt;
       lastMX = mx; lastMY = my; lastT = now;
-
-      // 只有鼠标在水中时（水面以下）才产生涟漪
-      if (my > waterlineY()) {
-        // Z倾斜目标（垂直速度）
-        zTiltTarget = clamp(vy * -0.08, -40, 40);
-
-        // 涟漪 — 注入脉冲到鼠标对应深度
-        const ix = Math.round((mx / w) * WX);
-        const depthFrac = clamp((my - waterlineY()) / (h - waterlineY()), 0, 1);
-        const iz = Math.round(depthFrac * (NZ - 1));
-        const impulse = 0.6 * (0.3 + depthFrac * 0.7); // 越深越强
-        const spread = 6;
-        for (let di = -spread; di <= spread; di++) {
-          for (let dj = -spread; dj <= spread; dj++) {
-            const ni = ix + di, nj = iz + dj;
-            if (ni >= 0 && ni < NX && nj >= 0 && nj < NZ) {
-              const d2 = di * di + dj * dj;
-              h1[ni * NZ + nj] += impulse * Math.exp(-d2 / 10);
-            }
-          }
-        }
-      }
+      if (my <= wlY()) return;
+      state.zTiltTarget = clamp(vy * -0.08, -40, 40);
+      const ix = Math.round((mx / w) * WX);
+      const iz = Math.round(clamp((my - wlY()) / (h - wlY()), 0, 1) * (NZ - 1));
+      rippleAt(state, ix, iz, 0.6 * (0.3 + clamp((my - wlY()) / (h - wlY()), 0, 1) * 0.7), 6);
     };
     const onMM = (e: MouseEvent) => onMouse(e.clientX, e.clientY);
     const onTouch = (e: TouchEvent) => { if (e.touches.length > 0) onMouse(e.touches[0].clientX, e.touches[0].clientY); };
     window.addEventListener('mousemove', onMM);
     window.addEventListener('touchmove', onTouch);
 
-    // 陀螺仪（移动端随动）
-    let gyroGamma = 0, gyroBeta = 0; // 平滑后的值
-    const onDeviceOrientation = (e: DeviceOrientationEvent) => {
+    /* ── 陀螺仪 ── */
+    let gyroG = 0, gyroB = 0;
+    const onGyro = (e: DeviceOrientationEvent) => {
       if (e.gamma == null || e.beta == null) return;
-      // 低通滤波平滑
-      gyroGamma += (e.gamma - gyroGamma) * 0.08;
-      gyroBeta += (e.beta - gyroBeta) * 0.08;
-      // 水平倾斜 → X方向目标
-      zTiltTarget = clamp(gyroGamma * 2.5, -50, 50);
-      // 注入涟漪（手机晃动产生自然波动）
-      if (Math.abs(gyroGamma) > 2 || Math.abs(gyroBeta) > 2) {
-        const ix = Math.round((0.5 + gyroGamma * 0.01) * WX);
-        const iz = 2;
-        const impulse = Math.min(0.4, (Math.abs(gyroGamma) + Math.abs(gyroBeta)) * 0.005);
-        for (let di = -4; di <= 4; di++)
-          for (let dj = -4; dj <= 4; dj++) {
-            const ni = ix + di, nj = iz + dj;
-            if (ni >= 0 && ni < NX && nj >= 0 && nj < NZ)
-              h1[ni * NZ + nj] += impulse * Math.exp(-(di * di + dj * dj) / 8);
-          }
+      gyroG += (e.gamma - gyroG) * 0.08; gyroB += (e.beta - gyroB) * 0.08;
+      state.zTiltTarget = clamp(gyroG * 2.5, -50, 50);
+      if (Math.abs(gyroG) > 2 || Math.abs(gyroB) > 2) {
+        rippleAt(state, Math.round((0.5 + gyroG * 0.01) * WX), 2, Math.min(0.4, (Math.abs(gyroG) + Math.abs(gyroB)) * 0.005), 4);
       }
     };
-    // 请求陀螺仪权限（iOS 13+ 需要）
     if (typeof (DeviceOrientationEvent as any)?.requestPermission === 'function') {
-      // iOS 需要用户手势触发，这里静默失败，用户触摸时再请求
-      document.addEventListener('click', function iosGyro() {
-        (DeviceOrientationEvent as any).requestPermission().then((state: string) => {
-          if (state === 'granted') window.addEventListener('deviceorientation', onDeviceOrientation);
-        }).catch(() => {});
-        document.removeEventListener('click', iosGyro);
+      document.addEventListener('click', function iosG() {
+        (DeviceOrientationEvent as any).requestPermission().then((s: string) => { if (s === 'granted') window.addEventListener('deviceorientation', onGyro); }).catch(() => {});
+        document.removeEventListener('click', iosG);
       }, { once: true });
-    } else {
-      window.addEventListener('deviceorientation', onDeviceOrientation);
-    }
-
-    /* ── 水面基准线 ── */
-    const waterlineY = () => h * 0.45;
+    } else { window.addEventListener('deviceorientation', onGyro); }
 
     /* ── 渲染 ── */
     const render = () => {
       animId = requestAnimationFrame(render);
-      const now = performance.now();
-      const dt = Math.min((now - lastT) / 1000, 0.05);
+      const now = performance.now(), dt = Math.min((now - lastT) / 1000, 0.05);
       lastT = now;
 
-      // 1. 二维波方程（含 z=0 和 z=NZ-1 反射边界）
-      const c = WAVE_C;
-      for (let i = 1; i < NX - 1; i++) {
-        for (let j = 0; j < NZ; j++) {
-          const idx = i * NZ + j;
-          // X 邻居
-          const xp = h1[idx - NZ], xn = h1[idx + NZ];
-          // Z 邻居 — 反射边界：z=0→镜像z=1, z=NZ-1→镜像z=NZ-2
-          const zp = j > 0 ? h1[idx - 1] : h1[idx + 1];
-          const zn = j < NZ - 1 ? h1[idx + 1] : h1[idx - 1];
-          const lap = xp + xn + zp + zn - 4 * h1[idx];
-          h2[idx] = (2 * h1[idx] - h0[idx] + c * lap) * DAMPING;
-        }
-      }
+      stepWaves(state, PARAMS);
+      stepTilt(state, PARAMS, dt);
+      microPerturb(state);
 
-      // 2. 更新Z倾斜
-      zTiltVel += (zTiltTarget - zTilt) * TILT_K * dt - zTiltVel * TILT_D * dt;
-      zTilt += zTiltVel * dt;
-      zTiltTarget *= 0.95;
-
-      // 随机微扰
-      if (Math.random() < 0.03) {
-        const ri = 1 + Math.floor(Math.random() * (NX - 2));
-        const rj = 1 + Math.floor(Math.random() * (NZ - 2));
-        for (let di = -2; di <= 2; di++)
-          for (let dj = -2; dj <= 2; dj++) {
-            const ni = ri + di, nj = rj + dj;
-            if (ni >= 0 && ni < NX && nj >= 0 && nj < NZ)
-              h1[ni * NZ + nj] += 0.03 * Math.exp(-(di * di + dj * dj) / 3);
-          }
-      }
-
-      // 3. 画上半屏（直接拷贝）
       ctx.drawImage(offscreen, 0, 0);
 
-      // 4. 下半屏折射区域
-      const wlBase = waterlineY();
-      const topY = Math.floor(wlBase) - 8;
-      const regionH = h - topY;
-      if (regionH <= 0) { [h0, h1, h2] = [h1, h2, h0]; h2.fill(0); return; }
+      const baseY = wlY(), topY = Math.floor(baseY) - 8, regionH = h - topY;
+      if (regionH <= 0) { swapBuffers(state); return; }
 
       const imageData = ctx.getImageData(0, topY, w, regionH);
       const src = octx.getImageData(0, topY, w, regionH);
-      const data = imageData.data;
-      const sdata = src.data;
-      const iw_px = imageData.width;
-      const ih_px = imageData.height;
+      const data = imageData.data, sdata = src.data, iw = imageData.width, ih = imageData.height;
 
-      // 预计算每列的水面线 Y（避免重复算）
-      const waterlineByX: number[] = [];
-      for (let px = 0; px < iw_px; px++) {
-        const iCell = Math.round((px / iw_px) * WX);
-        waterlineByX[px] = wlBase + h2[clamp(iCell, 0, NX - 1) * NZ + 0] * 12;
-      }
+      const wlx: number[] = [];
+      for (let px = 0; px < iw; px++) wlx[px] = baseY + waterlineAt(state, Math.round((px / iw) * WX)) * 12;
 
-      for (let py = 0; py < ih_px; py++) {
-        const screenY = topY + py;
-
-        for (let px = 0; px < iw_px; px++) {
-          const di = (py * iw_px + px) * 4;
-
-          // 像素在水面以上 → 不折射，直接拷贝
-          if (screenY < waterlineByX[px]) {
-            const si = di;
-            data[di] = sdata[si];
-            data[di + 1] = sdata[si + 1];
-            data[di + 2] = sdata[si + 2];
-            data[di + 3] = 255;
-            continue;
-          }
-
-          // 像素在水中 → 计算折射
-          const iCell = Math.round((px / iw_px) * WX);
-          const zFrac = clamp((screenY - wlBase) / (h - wlBase), 0, 1);
-          const jCell = Math.round(zFrac * WZ);
-
-          const il = clamp(iCell - 1, 0, NX - 1), ir = clamp(iCell + 1, 0, NX - 1);
-          const jl = clamp(jCell - 1, 0, NZ - 1), jr = clamp(jCell + 1, 0, NZ - 1);
-          const ddx = il !== ir ? (h1[ir * NZ + jCell] - h1[il * NZ + jCell]) / (ir - il) : 0;
-          const ddz = jl !== jr ? (h1[iCell * NZ + jr] - h1[iCell * NZ + jl]) / (jr - jl) : 0;
-          const effectiveDz = ddz + zTilt * 0.005 * zFrac;
-
-          const offX = ddx * REFRACT_X * w * 0.005;
-          const offY = effectiveDz * REFRACT_Z * 1.5;
-
-          const sx = Math.round(px + offX);
-          const sy = Math.round(py + offY);
-          const csx = clamp(sx, 0, iw_px - 1);
-          const csy = clamp(sy, 0, ih_px - 1);
-
-          const si = (csy * iw_px + csx) * 4;
-          data[di] = sdata[si];
-          data[di + 1] = sdata[si + 1];
-          data[di + 2] = sdata[si + 2];
-          data[di + 3] = 255;
+      for (let py = 0; py < ih; py++) {
+        const sy = topY + py;
+        for (let px = 0; px < iw; px++) {
+          const di = (py * iw + px) * 4;
+          if (sy < wlx[px]) { data[di]=sdata[di]; data[di+1]=sdata[di+1]; data[di+2]=sdata[di+2]; data[di+3]=255; continue; }
+          const ic = Math.round((px / iw) * WX);
+          const zf = clamp((sy - baseY) / (h - baseY), 0, 1);
+          const jc = Math.round(zf * WZ);
+          const g = gradient(state, ic, jc);
+          const edz = g.dz + state.zTilt * 0.005 * zf;
+          const ox = g.dx * PARAMS.refractX * w * 0.005;
+          const oy = edz * PARAMS.refractZ * 1.5;
+          const sx = clamp(Math.round(px + ox), 0, iw - 1), sy2 = clamp(Math.round(py + oy), 0, ih - 1);
+          const si = (sy2 * iw + sx) * 4;
+          data[di]=sdata[si]; data[di+1]=sdata[si+1]; data[di+2]=sdata[si+2]; data[di+3]=255;
         }
       }
       ctx.putImageData(imageData, 0, topY);
 
-      // 5. 蓝色水体 — 跟随水面线曲线填充
-      ctx.save();
+      const lt = curTheme === 'light';
+      ctx.save(); ctx.beginPath();
+      for (let i = 0; i <= WX; i++) { const x = i * (w / WX); const wy = wlx[Math.round(i * (iw - 1) / WX) ?? 0]; i === 0 ? ctx.moveTo(x, wy) : ctx.lineTo(x, wy); }
+      ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath();
+      const wg = ctx.createLinearGradient(0, baseY - 10, 0, h);
+      if (lt) { wg.addColorStop(0,'rgba(160,210,240,0.15)'); wg.addColorStop(0.3,'rgba(130,190,230,0.35)'); wg.addColorStop(0.7,'rgba(80,140,210,0.55)'); wg.addColorStop(1,'rgba(40,80,160,0.75)'); }
+      else { wg.addColorStop(0,'rgba(160,210,240,0.24)'); wg.addColorStop(0.2,'rgba(130,190,230,0.60)'); wg.addColorStop(0.6,'rgba(80,140,210,1.0)'); wg.addColorStop(1,'rgba(40,80,160,1.0)'); }
+      ctx.fillStyle = wg; ctx.fill(); ctx.restore();
+
       ctx.beginPath();
-      const segW2 = w / WX;
-      // 沿水面线从左到右
-      for (let i = 0; i <= WX; i++) {
-        const x = i * segW2;
-        const wy = wlBase + h2[i * NZ + 0] * 12;
-        if (i === 0) ctx.moveTo(x, wy);
-        else ctx.lineTo(x, wy);
-      }
-      // 向下到屏幕底，再闭合
-      ctx.lineTo(w, h);
-      ctx.lineTo(0, h);
+      for (let i = 0; i <= WX; i++) { const x = i * (w / WX); const wy = baseY + waterlineAt(state, i) * 12; i === 0 ? ctx.moveTo(x, wy) : ctx.lineTo(x, wy); }
+      ctx.strokeStyle = lt ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.45)'; ctx.lineWidth = 2.5; ctx.stroke();
+
+      // 光晕
+      ctx.save(); ctx.beginPath();
+      for (let i = 0; i <= WX; i++) { const x = i * (w / WX); const wy = baseY + waterlineAt(state, i) * 12; i===0?ctx.moveTo(x,wy-4):ctx.lineTo(x,wy-4); }
+      for (let i = WX; i>=0; i--) { const x = i*(w/WX); const wy=baseY+waterlineAt(state,i)*12; ctx.lineTo(x,wy+4); }
       ctx.closePath();
-      // 渐变填充（从上到下）
-      const isLight = currentTheme === 'light';
-      const waterGrad = ctx.createLinearGradient(0, wlBase - 10, 0, h);
-      if (isLight) {
-        waterGrad.addColorStop(0, 'rgba(160,210,240,0.15)');
-        waterGrad.addColorStop(0.3, 'rgba(130,190,230,0.35)');
-        waterGrad.addColorStop(0.7, 'rgba(80,140,210,0.55)');
-        waterGrad.addColorStop(1, 'rgba(40,80,160,0.75)');
-      } else {
-        waterGrad.addColorStop(0, 'rgba(160,210,240,0.24)');
-        waterGrad.addColorStop(0.2, 'rgba(130,190,230,0.60)');
-        waterGrad.addColorStop(0.6, 'rgba(80,140,210,1.0)');
-        waterGrad.addColorStop(1, 'rgba(40,80,160,1.0)');
-      }
-      ctx.fillStyle = waterGrad;
-      ctx.fill();
-      ctx.restore();
+      const gg = ctx.createLinearGradient(0, baseY-8, 0, baseY+8);
+      gg.addColorStop(0,'rgba(100,150,220,0)'); gg.addColorStop(0.5,'rgba(100,150,220,0.25)'); gg.addColorStop(1,'rgba(100,150,220,0)');
+      ctx.fillStyle=gg; ctx.fill(); ctx.restore();
 
-      // 6. 水面线 h(x, z=0)
-      const segW = w / WX;
-      ctx.beginPath();
-      for (let i = 0; i <= WX; i++) {
-        const x = i * segW;
-        const waveH = h2[i * NZ + 0];   // z=0 前壁处
-        const y = wlBase + waveH * 12;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.strokeStyle = isLight ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.45)';
-      ctx.lineWidth = 2.5;
-      ctx.stroke();
-
-      // 水面光晕 — 跟随水面线
-      ctx.save();
-      ctx.beginPath();
-      const segW3 = w / WX;
-      const glowTop = 4, glowBot = 4;
-      for (let i = 0; i <= WX; i++) {
-        const x = i * segW3;
-        const wy = wlBase + h2[i * NZ + 0] * 12;
-        if (i === 0) ctx.moveTo(x, wy - glowTop);
-        else ctx.lineTo(x, wy - glowTop);
-      }
-      for (let i = WX; i >= 0; i--) {
-        const x = i * segW3;
-        const wy = wlBase + h2[i * NZ + 0] * 12;
-        ctx.lineTo(x, wy + glowBot);
-      }
-      ctx.closePath();
-      const glowGrad = ctx.createLinearGradient(0, wlBase - glowTop - 4, 0, wlBase + glowBot + 4);
-      glowGrad.addColorStop(0, 'rgba(100,150,220,0)');
-      glowGrad.addColorStop(0.5, 'rgba(100,150,220,0.25)');
-      glowGrad.addColorStop(1, 'rgba(100,150,220,0)');
-      ctx.fillStyle = glowGrad;
-      ctx.fill();
-      ctx.restore();
-
-      // 缓冲区轮转
-      [h0, h1, h2] = [h1, h2, h0];
-      h2.fill(0);
+      swapBuffers(state);
     };
-
     render();
 
-    /* ── IntersectionObserver ── */
-    const observer = new IntersectionObserver(
-      ([e]) => {
-        if (!e.isIntersecting) cancelAnimationFrame(animId);
-        else { cancelAnimationFrame(animId); animId = requestAnimationFrame(render); }
-      },
-      { threshold: 0 },
-    );
-    observer.observe(canvas);
+    const obs = new IntersectionObserver(([e]) => { if (!e.isIntersecting) cancelAnimationFrame(animId); else { cancelAnimationFrame(animId); animId = requestAnimationFrame(render); } }, { threshold: 0 });
+    obs.observe(canvas);
 
     return () => {
-      cancelAnimationFrame(animId);
-      clearInterval(bgTimer);
-      observer.disconnect();
-      themeObserver.disconnect();
-      window.removeEventListener('mousemove', onMM);
-      window.removeEventListener('touchmove', onTouch);
-      window.removeEventListener('deviceorientation', onDeviceOrientation);
-      window.removeEventListener('resize', resize);
-      window.removeEventListener('resize', drawBg);
+      cancelAnimationFrame(animId); clearInterval(bgTimer);
+      obs.disconnect(); themeObs.disconnect();
+      window.removeEventListener('mousemove', onMM); window.removeEventListener('touchmove', onTouch);
+      window.removeEventListener('deviceorientation', onGyro);
+      window.removeEventListener('resize', resize); window.removeEventListener('resize', drawBg);
     };
   }, []);
 
