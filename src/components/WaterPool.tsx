@@ -252,13 +252,30 @@ export default function WaterPool() {
       ctx.lineWidth = 2.5;
       ctx.stroke();
 
-      // 水面微光
-      const glowGrad = ctx.createLinearGradient(0, wlBase - 4, 0, wlBase + 4);
-      glowGrad.addColorStop(0, 'rgba(200,220,255,0)');
-      glowGrad.addColorStop(0.5, 'rgba(200,220,255,0.10)');
-      glowGrad.addColorStop(1, 'rgba(200,220,255,0)');
+      // 水面光晕 — 跟随水面线
+      ctx.save();
+      ctx.beginPath();
+      const segW3 = w / WX;
+      const glowTop = 4, glowBot = 4;
+      for (let i = 0; i <= WX; i++) {
+        const x = i * segW3;
+        const wy = wlBase + h2[i * NZ + 0] * 12;
+        if (i === 0) ctx.moveTo(x, wy - glowTop);
+        else ctx.lineTo(x, wy - glowTop);
+      }
+      for (let i = WX; i >= 0; i--) {
+        const x = i * segW3;
+        const wy = wlBase + h2[i * NZ + 0] * 12;
+        ctx.lineTo(x, wy + glowBot);
+      }
+      ctx.closePath();
+      const glowGrad = ctx.createLinearGradient(0, wlBase - glowTop - 4, 0, wlBase + glowBot + 4);
+      glowGrad.addColorStop(0, 'rgba(100,150,220,0)');
+      glowGrad.addColorStop(0.5, 'rgba(100,150,220,0.25)');
+      glowGrad.addColorStop(1, 'rgba(100,150,220,0)');
       ctx.fillStyle = glowGrad;
-      ctx.fillRect(0, wlBase - 4, w, 8);
+      ctx.fill();
+      ctx.restore();
 
       // 缓冲区轮转
       [h0, h1, h2] = [h1, h2, h0];
