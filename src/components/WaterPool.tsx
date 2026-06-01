@@ -134,6 +134,10 @@ export default function WaterPool() {
       }
       ctx.putImageData(imageData, 0, Math.floor(wlBase) - 5);
 
+      // 淡蓝色水体覆盖（下半屏）
+      ctx.fillStyle = 'rgba(180,210,240,0.12)';
+      ctx.fillRect(0, wlBase, w, h - wlBase);
+
       // 3. 水面线（切面轮廓）
       ctx.beginPath();
       const segW = w / SAMPLES;
