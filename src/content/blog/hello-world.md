@@ -1,7 +1,7 @@
 ---
 title: "Hello World — 零成本博客启航"
 excerpt: "第一篇博客文章，介绍这个零成本博客的技术栈和搭建思路。"
-publishedAt: 2026-05-31
+publishedAt: 2026-06-01
 tags: ["Astro", "GitHub Pages", "零成本"]
 author: "RSY"
 ---
@@ -15,7 +15,7 @@ author: "RSY"
 作为独立开发者，我希望在 **完全不花钱** 的前提下拥有一个高性能、可扩展的个人博客。经过调研，我选择了以下技术组合：
 
 | 层级 | 技术 | 费用 |
-|------|------|------|
+|:----:|:----:|:----:|
 | 静态生成 | Astro SSG | 免费 |
 | 样式 | TailwindCSS + Shadcn UI | 免费 |
 | 认证 | Supabase Auth | 免费 (50K MAU) |
