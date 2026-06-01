@@ -42,6 +42,11 @@ export default function WaterPool() {
     const darkImgs: HTMLImageElement[] = BG_DARK.map(u => { const i = new Image(); i.src = u; return i; });
     const lightImgs: HTMLImageElement[] = BG_LIGHT.map(u => { const i = new Image(); i.src = u; return i; });
     let bgIdx = 0;
+    // 渐变过渡
+    const prevCanvas = document.createElement('canvas');
+    const pctx = prevCanvas.getContext('2d')!;
+    let fadeT = 0;  // 0→1, 0=旧图 1=新图
+    const FADE_DURATION = 1.5; // 秒
 
     /* ── 主题 ── */
     const theme = () => document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
@@ -60,14 +65,23 @@ export default function WaterPool() {
       const lt = curTheme === 'light';
       const imgs = lt ? lightImgs : darkImgs;
       const img = imgs[bgIdx % imgs.length];
+
+      // 渐变过渡中：先画旧画面
+      if (fadeT < 1) {
+        octx.drawImage(prevCanvas, 0, 0);
+        octx.globalAlpha = fadeT;
+      }
+
       if (img?.complete) {
         const iw = img.naturalWidth, ih = img.naturalHeight;
         const s = Math.max(w / iw, h / ih);
         octx.drawImage(img, (w - iw * s) / 2, (h - ih * s) / 2, iw * s, ih * s);
-      } else {
+      } else if (fadeT >= 1) {
         octx.fillStyle = lt ? '#f5f3fa' : '#0d0b1a';
         octx.fillRect(0, 0, w, h);
       }
+      octx.globalAlpha = 1;
+
       octx.fillStyle = lt ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.25)';
       octx.fillRect(0, 0, w, h);
       const g = octx.createLinearGradient(0, 0, w, 0);
@@ -85,7 +99,12 @@ export default function WaterPool() {
     window.addEventListener('resize', drawBg);
     const themeObs = new MutationObserver(() => { const t = theme(); if (t !== curTheme) { curTheme = t; drawBg(); } });
     themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-    const bgTimer = setInterval(() => { bgIdx++; drawBg(); }, 15000);
+    const bgTimer = setInterval(() => {
+      // 保存当前画面到 prevCanvas
+      prevCanvas.width = w; prevCanvas.height = h;
+      pctx.drawImage(offscreen, 0, 0);
+      bgIdx++; fadeT = 0; // 开始渐变
+    }, 15000);
 
     /* ── 鼠标 ── */
     const wlY = () => h * 0.45;
@@ -127,6 +146,9 @@ export default function WaterPool() {
       animId = requestAnimationFrame(render);
       const now = performance.now(), dt = Math.min((now - lastT) / 1000, 0.05);
       lastT = now;
+
+      // 渐变过渡推进
+      if (fadeT < 1) { fadeT = Math.min(1, fadeT + dt / FADE_DURATION); drawBg(); }
 
       stepWaves(state, PARAMS);
       stepTilt(state, PARAMS, dt);
