@@ -147,14 +147,6 @@ export default function WaterPool() {
     };
     window.addEventListener('keydown', onKey);
 
-    // ③ 双击小鱼
-    let fishX = -1, fishY = 0, fishAlpha = 0, fishDir = 1;
-    const onDblClick = (e: MouseEvent) => {
-      if (e.clientY < wlY()) return;
-      fishX = e.clientX; fishY = e.clientY; fishAlpha = 1; fishDir = Math.random() > 0.5 ? 1 : -1;
-    };
-    window.addEventListener('dblclick', onDblClick);
-
     // 彩蛋触发
     let rageEnd = 0;
     function triggerRage() {
@@ -166,10 +158,12 @@ export default function WaterPool() {
     }
     let konamiParticles: {x:number;y:number;vx:number;vy:number;life:number;c:string}[] = [];
     function triggerKonami() {
-      for (let i = 0; i < 120; i++) {
+      for (let i = 0; i < 300; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const s = 3 + Math.random() * 18;
         konamiParticles.push({
-          x: w/2, y: h/2, vx: (Math.random()-0.5)*8, vy: (Math.random()-0.5)*8,
-          life: 1, c: ['#6366f1','#a855f7','#06b6d4','#ec4899','#facc15'][Math.floor(Math.random()*5)]
+          x: w/2, y: h/2, vx: Math.cos(a)*s, vy: Math.sin(a)*s - Math.random()*8,
+          life: 1, c: ['#6366f1','#a855f7','#06b6d4','#ec4899','#facc15','#f472b6','#38bdf8'][Math.floor(Math.random()*7)]
         });
       }
     }
@@ -263,27 +257,12 @@ export default function WaterPool() {
       gg.addColorStop(0,'rgba(100,150,220,0)'); gg.addColorStop(0.5,'rgba(100,150,220,0.25)'); gg.addColorStop(1,'rgba(100,150,220,0)');
       ctx.fillStyle=gg; ctx.fill(); ctx.restore();
 
-      // 彩蛋：小鱼
-      if (fishAlpha > 0) {
-        fishX += fishDir * 2;
-        fishAlpha -= 0.008;
-        ctx.save(); ctx.globalAlpha = fishAlpha;
-        ctx.translate(fishX, fishY);
-        ctx.scale(fishDir, 1);
-        ctx.fillStyle = '#111';
-        ctx.beginPath();
-        ctx.moveTo(15, 0); ctx.lineTo(-15, -10); ctx.lineTo(-10, 0);
-        ctx.lineTo(-15, 10); ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-      }
-
       // 彩蛋：Konami 粒子
       for (const p of konamiParticles) {
         p.x += p.vx; p.y += p.vy; p.life -= 0.015; p.vy += 0.05;
         if (p.life <= 0) continue;
         ctx.fillStyle = p.c; ctx.globalAlpha = p.life;
-        ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y, 10, 0, Math.PI*2); ctx.fill();
       }
       ctx.globalAlpha = 1;
       konamiParticles = konamiParticles.filter(p => p.life > 0);
@@ -302,7 +281,6 @@ export default function WaterPool() {
       window.removeEventListener('deviceorientation', onGyro);
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('click', onWindowClick);
-      window.removeEventListener('dblclick', onDblClick);
       window.removeEventListener('resize', resize); window.removeEventListener('resize', drawBg);
     };
   }, []);
