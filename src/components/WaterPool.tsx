@@ -1,11 +1,12 @@
-// ─── Canvas 光追风格水面 — 波光反射 + 焦散 ───
-// 不用 Three.js，纯 Canvas 像素级控制
+// ─── 水族馆水壁 — 折射扭曲 + 水面线晃荡 ───
+// 水透明不可见，仅通过背景扭曲和水面线感知其存在
 
 import { useEffect, useRef } from 'react';
 
-const GRID = 120;          // 波场分辨率
-const DAMPING = 0.985;     // 衰减
-const SPEED = 0.22;        // 波速
+const SAMPLES = 180;          // 水面线采样点
+const DAMPING = 0.985;
+const SPEED = 0.2;
+const REFRACT = 0.015;       // 折射强度
 
 export default function WaterPool() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -16,155 +17,161 @@ export default function WaterPool() {
     const ctx = canvas.getContext('2d')!;
     let w = 0, h = 0, animId = 0;
 
-    // 三缓冲区高度场
-    const N = GRID + 1;
-    let h0 = new Float32Array(N * N);
-    let h1 = new Float32Array(N * N);
-    let h2 = new Float32Array(N * N);
+    // 离屏背景画布
+    const offscreen = document.createElement('canvas');
+    const octx = offscreen.getContext('2d')!;
 
-    // 光折射偏移 → 用于焦散绘制
-    let causticMap = new Float32Array(N * N);
+    // ─── 水面线波场（一维） ───
+    const N = SAMPLES + 1;
+    let w0 = new Float32Array(N);
+    let w1 = new Float32Array(N);
+    let w2 = new Float32Array(N);
 
     const resize = () => {
       w = canvas.width = window.innerWidth;
       h = canvas.height = window.innerHeight;
+      offscreen.width = w;
+      offscreen.height = h;
     };
     resize();
     window.addEventListener('resize', resize);
 
+    // ─── 画背景到离屏 Canvas ───
+    const drawBackground = () => {
+      // 渐变底
+      const grad = octx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, '#0d0b1a');
+      grad.addColorStop(0.4, '#1a1145');
+      grad.addColorStop(0.7, '#0d1b3e');
+      grad.addColorStop(1, '#0a0a18');
+      octx.fillStyle = grad;
+      octx.fillRect(0, 0, w, h);
+      // 装饰光斑
+      octx.fillStyle = 'rgba(99,102,241,0.06)';
+      octx.beginPath(); octx.arc(w * 0.3, h * 0.3, 200, 0, Math.PI * 2); octx.fill();
+      octx.fillStyle = 'rgba(168,85,247,0.04)';
+      octx.beginPath(); octx.arc(w * 0.7, h * 0.5, 180, 0, Math.PI * 2); octx.fill();
+      // 标题
+      octx.fillStyle = '#ffffff';
+      octx.font = `bold ${Math.min(w * 0.08, 80)}px "Noto Serif SC", serif`;
+      octx.textAlign = 'center';
+      octx.shadowColor = 'rgba(99,102,241,0.4)';
+      octx.shadowBlur = 40;
+      octx.fillText("RSY's 1st BLOG", w / 2, h * 0.35);
+      octx.shadowBlur = 0;
+      // tagline
+      octx.fillStyle = 'rgba(200,210,240,0.6)';
+      octx.font = `${Math.min(w * 0.025, 24)}px "Inter","Noto Sans SC",sans-serif`;
+      octx.fillText('记录 · 思考 · 创造', w / 2, h * 0.35 + 50);
+      octx.textAlign = 'start';
+    };
+    drawBackground();
+    window.addEventListener('resize', drawBackground);
+
     // ─── 鼠标涟漪 ───
     const onMouse = (mx: number, my: number) => {
-      // 屏幕坐标 → 波场索引（水占下半屏 45%~100%）
-      const ix = Math.round((mx / w) * GRID);
-      const iy = Math.round(((my - h * 0.45) / (h * 0.55)) * GRID);
-      if (ix < 1 || ix >= N - 1 || iy < 1 || iy >= N - 1) return;
-      const impulse = 0.6;
-      for (let di = -8; di <= 8; di++) {
-        for (let dj = -8; dj <= 8; dj++) {
-          const ni = ix + di, nj = iy + dj;
-          if (ni < 0 || ni >= N || nj < 0 || nj >= N) continue;
-          h1[ni * N + nj] += impulse * Math.exp(-(di * di + dj * dj) / 14);
-        }
+      const ix = Math.round((mx / w) * SAMPLES);
+      if (ix < 2 || ix >= N - 2) return;
+      const impulse = 0.7;
+      for (let d = -10; d <= 10; d++) {
+        const ni = ix + d;
+        if (ni >= 0 && ni < N) w1[ni] += impulse * Math.exp(-(d * d) / 16);
       }
     };
-
-    const onMouseMove = (e: MouseEvent) => onMouse(e.clientX, e.clientY);
-    const onTouch = (e: TouchEvent) => {
-      if (e.touches.length > 0) onMouse(e.touches[0].clientX, e.touches[0].clientY);
-    };
-    window.addEventListener('mousemove', onMouseMove);
+    const onMM = (e: MouseEvent) => onMouse(e.clientX, e.clientY);
+    const onTouch = (e: TouchEvent) => { if (e.touches.length > 0) onMouse(e.touches[0].clientX, e.touches[0].clientY); };
+    window.addEventListener('mousemove', onMM);
     window.addEventListener('touchmove', onTouch);
 
-    // ─── 渲染一帧 ───
+    // ─── 水面线高度（屏幕上的 Y 像素） ───
+    const waterlineBase = () => h * 0.45;
+
+    // ─── 渲染 ───
     const render = () => {
       animId = requestAnimationFrame(render);
 
-      // 1. 波方程时间步
+      // 1. 波方程
       const c = SPEED;
       for (let i = 1; i < N - 1; i++) {
-        for (let j = 1; j < N - 1; j++) {
-          const idx = i * N + j;
-          const lap = h1[idx - N] + h1[idx + N] + h1[idx - 1] + h1[idx + 1] - 4 * h1[idx];
-          h2[idx] = (2 * h1[idx] - h0[idx] + c * lap) * DAMPING;
-        }
+        const lap = w1[i - 1] + w1[i + 1] - 2 * w1[i];
+        w2[i] = (2 * w1[i] - w0[i] + c * lap) * DAMPING;
       }
-
       // 随机微扰
-      if (Math.random() < 0.05) {
-        const rx = 1 + Math.floor(Math.random() * (N - 2));
-        const ry = 1 + Math.floor(Math.random() * (N - 2));
-        for (let di = -2; di <= 2; di++)
-          for (let dj = -2; dj <= 2; dj++) {
-            const ni = rx + di, nj = ry + dj;
-            if (ni >= 0 && ni < N && nj >= 0 && nj < N)
-              h1[ni * N + nj] += 0.04 * Math.exp(-(di * di + dj * dj) / 2);
-          }
-      }
-
-      // 计算焦散强度图（波面曲率 → 光线聚焦）
-      for (let i = 1; i < N - 1; i++) {
-        for (let j = 1; j < N - 1; j++) {
-          const idx = i * N + j;
-          const dx = h2[idx + 1] - h2[idx - 1];
-          const dy = h2[idx + N] - h2[idx - N];
-          causticMap[idx] = Math.abs(dx) + Math.abs(dy);
+      if (Math.random() < 0.04) {
+        const ri = 1 + Math.floor(Math.random() * (N - 2));
+        for (let d = -2; d <= 2; d++) {
+          const ni = ri + d;
+          if (ni >= 0 && ni < N) w1[ni] += 0.03 * Math.exp(-(d * d) / 2);
         }
       }
 
-      // 2. 绘制
-      ctx.clearRect(0, 0, w, h);
+      // 2. 折射渲染
+      const wlBase = waterlineBase();
+      // 上半屏：直接拷贝背景
+      ctx.drawImage(offscreen, 0, 0);
+      // 下半屏：逐像素折射采样
+      const imageData = ctx.getImageData(0, Math.floor(wlBase) - 5, w, h - Math.floor(wlBase) + 5);
+      const src = octx.getImageData(0, Math.floor(wlBase) - 10, w, h - Math.floor(wlBase) + 10);
+      const data = imageData.data;
+      const sdata = src.data;
+      const iw = imageData.width;
+      const ih = imageData.height;
 
-      // 底色（深蓝黑）
-      ctx.fillStyle = '#0a0a18';
-      ctx.fillRect(0, 0, w, h);
+      for (let py = 0; py < ih; py++) {
+        const screenY = wlBase + py;
+        // 该行对应的水面线采样点
+        const sampleIdx = Math.round((py / ih) * SAMPLES);
+        const waveH = w2[Math.min(sampleIdx, N - 1)];
+        const waveSlope = sampleIdx > 0 && sampleIdx < N - 1
+          ? (w2[sampleIdx + 1] - w2[sampleIdx - 1]) : 0;
 
-      // 水面区域 — 下半屏（0.45~1.0）
-      const waterTop = h * 0.45;
-      const waterBot = h;
-      const waterH = waterBot - waterTop;
-      const cellW = w / GRID;
-      const cellH = waterH / GRID;
+        // 折射偏移：越往下偏移越大（光线穿过更厚的水层）
+        const depth = py / ih; // 0 at surface, 1 at bottom
+        const offsetX = (waveSlope * 60 + waveH * 2) * depth * REFRACT * w;
 
-      // 水下底色渐变
-      const underGrad = ctx.createLinearGradient(0, waterTop, 0, waterBot);
-      underGrad.addColorStop(0, 'rgba(10,20,50,0.9)');
-      underGrad.addColorStop(0.5, 'rgba(8,15,40,0.95)');
-      underGrad.addColorStop(1, 'rgba(5,8,25,0.98)');
-      ctx.fillStyle = underGrad;
-      ctx.fillRect(0, waterTop, w, waterH);
-
-      // 焦散光斑（水下投射）— 降低阈值让效果可见
-      for (let i = 0; i < N; i++) {
-        for (let j = 0; j < N; j++) {
-          const idx = i * N + j;
-          const caustic = causticMap[idx];
-          if (caustic > 0.002) {
-            const cx = i * cellW;
-            const cy = waterTop + j * cellH;
-            const alpha = Math.min(caustic * 8, 0.3);
-            const r = cellW * 2;
-            const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-            g.addColorStop(0, `rgba(100,160,255,${alpha})`);
-            g.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.fillStyle = g;
-            ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
-          }
+        for (let px = 0; px < iw; px++) {
+          const srcX = Math.round(px + offsetX);
+          const clampedX = Math.max(0, Math.min(iw - 1, srcX));
+          const srcIdx = (py * iw + clampedX) * 4;
+          const dstIdx = (py * iw + px) * 4;
+          data[dstIdx] = sdata[srcIdx];
+          data[dstIdx + 1] = sdata[srcIdx + 1];
+          data[dstIdx + 2] = sdata[srcIdx + 2];
+          data[dstIdx + 3] = 255;
         }
       }
+      ctx.putImageData(imageData, 0, Math.floor(wlBase) - 5);
 
-      // 水面镜面反射线（波峰高光）
-      ctx.strokeStyle = 'rgba(180,220,255,0.2)';
-      ctx.lineWidth = 2;
-      for (let i = 0; i < N - 1; i++) {
-        for (let j = 0; j < N - 1; j++) {
-          const idx = i * N + j;
-          const hCur = h2[idx];
-          const hNext = h2[idx + 1];
-          // 波峰检测 — 降低阈值
-          if (hCur > 0.003 && hCur > hNext && hCur > h2[idx - 1]) {
-            const x = i * cellW;
-            const y = waterTop + j * cellH + hCur * 60;
-            ctx.globalAlpha = Math.min(hCur * 30, 0.7);
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + cellW, y);
-            ctx.stroke();
-            ctx.globalAlpha = 1;
-          }
+      // 3. 水面线（切面轮廓）
+      ctx.beginPath();
+      const segW = w / SAMPLES;
+      for (let i = 0; i <= SAMPLES; i++) {
+        const x = i * segW;
+        const y = wlBase + w2[i] * 35;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = 'rgba(180,210,255,0.35)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // 4. 波峰高光点
+      for (let i = 1; i < SAMPLES; i++) {
+        if (w2[i] > 0.004 && w2[i] > w2[i - 1] && w2[i] > w2[i + 1]) {
+          const x = i * segW;
+          const y = wlBase + w2[i] * 35;
+          const alpha = Math.min(w2[i] * 40, 0.5);
+          const g = ctx.createRadialGradient(x, y, 0, x, y, 8);
+          g.addColorStop(0, `rgba(255,255,255,${alpha})`);
+          g.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = g;
+          ctx.fillRect(x - 10, y - 10, 20, 20);
         }
       }
-
-      // 水平线光晕
-      const horGrad = ctx.createLinearGradient(0, waterTop - 3, 0, waterTop + 20);
-      horGrad.addColorStop(0, 'rgba(130,170,255,0.0)');
-      horGrad.addColorStop(0.3, 'rgba(130,170,255,0.12)');
-      horGrad.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = horGrad;
-      ctx.fillRect(0, waterTop - 3, w, 23);
 
       // 缓冲区轮转
-      [h0, h1, h2] = [h1, h2, h0];
-      h2.fill(0);
+      [w0, w1, w2] = [w1, w2, w0];
+      w2.fill(0);
     };
 
     render();
@@ -179,9 +186,10 @@ export default function WaterPool() {
     return () => {
       cancelAnimationFrame(animId);
       observer.disconnect();
-      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mousemove', onMM);
       window.removeEventListener('touchmove', onTouch);
       window.removeEventListener('resize', resize);
+      window.removeEventListener('resize', drawBackground);
     };
   }, []);
 

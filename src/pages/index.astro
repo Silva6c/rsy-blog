@@ -1,8 +1,8 @@
 ---
-// ─── 首页 — WebGL Water 水面 ───
+// ─── 首页 — 水族馆水壁 ───
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import WaterPool from '@/components/WaterPool.tsx';
-import { SITE_NAME, SITE_TAGLINE, SITE_DESCRIPTION } from '@/lib/constants';
+import { SITE_DESCRIPTION } from '@/lib/constants';
 ---
 
 <BaseLayout
@@ -11,17 +11,4 @@ import { SITE_NAME, SITE_TAGLINE, SITE_DESCRIPTION } from '@/lib/constants';
   hideBackground
 >
   <WaterPool client:load />
-
-  <div class="relative flex min-h-[calc(100vh-180px)] items-center justify-center">
-    <div class="text-center px-4">
-      <h1 class="text-5xl sm:text-7xl font-bold tracking-tight font-serif-sc text-glow-brand animate-fade-up delay-300">
-        <span class="text-gradient-brand">
-          {SITE_NAME}
-        </span>
-      </h1>
-      <p class="mt-6 text-base sm:text-lg tracking-widest text-[hsl(var(--muted-foreground))] animate-fade-in delay-1500">
-        {SITE_TAGLINE}
-      </p>
-    </div>
-  </div>
 </BaseLayout>
