@@ -1,0 +1,96 @@
+---
+// ─── 全局布局组件（毛玻璃风格） ───
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import ClickEffect from '@/components/ClickEffect.tsx';
+import BackToTop from '@/components/BackToTop.tsx';
+import WelcomeScreen from '@/components/WelcomeScreen.tsx';
+import BackgroundImage from '@/components/BackgroundImage.tsx';
+import ReadingProgress from '@/components/ReadingProgress.tsx';
+import '@/styles/globals.css';
+import { BASE, SITE_NAME, SITE_DESCRIPTION } from '@/lib/constants';
+
+export interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  showFooter?: boolean;
+  /** 首页不需要两层背景图，设为 true 跳过 BackgroundImage */
+  hideBackground?: boolean;
+}
+
+const { title, description, ogImage, showFooter = true, hideBackground = false } = Astro.props;
+
+const pageTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
+const pageDescription = description ?? SITE_DESCRIPTION;
+---
+
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={pageDescription} />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:type" content={ogImage ? 'article' : 'website'} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta property="og:site_name" content={SITE_NAME} />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+
+    <!-- 字体预加载 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>{pageTitle}</title>
+
+    <!-- 主题初始化脚本（防止页面闪烁） -->
+    <script is:inline>
+      (function () {
+        const mode = localStorage.getItem('theme-mode');
+        if (mode === 'auto') {
+          var h = new Date().getHours();
+          document.documentElement.setAttribute('data-theme', (h >= 6 && h < 18) ? 'light' : 'dark');
+          document.documentElement.setAttribute('data-theme-mode', 'auto');
+        } else if (mode === 'light' || mode === 'dark') {
+          document.documentElement.setAttribute('data-theme', mode);
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <!-- 背景图片层（首页跳过，视频背景替代） -->
+    {!hideBackground && <BackgroundImage client:load />}
+
+    <!-- 欢迎屏幕（首次访问显示） -->
+    <WelcomeScreen client:load />
+
+    <!-- 全局阅读进度条 -->
+    <ReadingProgress client:load />
+
+    <Header />
+
+    <!-- 主内容 -->
+    <main class="flex-1 mx-auto w-full max-w-5xl px-4 py-8 sm:py-12">
+      <slot />
+    </main>
+
+    {showFooter && <Footer />}
+
+    <!-- 全局交互组件（客户端渲染） -->
+    <ClickEffect client:load />
+    <BackToTop client:load />
+  </body>
+</html>

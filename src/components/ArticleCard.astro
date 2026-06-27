@@ -1,0 +1,49 @@
+---
+// ─── 文章卡片组件（毛玻璃风格） ───
+import type { CollectionEntry } from 'astro:content';
+import { estimateReadingTime, formatDate } from '@/lib/utils';
+import { BASE } from '@/lib/constants';
+
+export interface Props {
+  article: CollectionEntry<'blog'>;
+}
+
+const { article } = Astro.props;
+const { title, excerpt, publishedAt, tags } = article.data;
+---
+
+<article class="glass-card group p-6 cursor-pointer">
+  <a href={`${BASE}blog/${article.slug}`} class="block no-underline">
+    <!-- 标签 -->
+    {tags.length > 0 && (
+      <div class="mb-3 flex flex-wrap gap-1.5">
+        {tags.slice(0, 3).map((tag: string) => (
+          <span class="inline-block rounded-full bg-[hsl(var(--primary))/0.12] px-2.5 py-0.5 text-xs font-medium text-[hsl(var(--primary))] transition-colors group-hover:bg-[hsl(var(--primary))/0.25]">
+            {tag}
+          </span>
+        ))}
+      </div>
+    )}
+
+    <!-- 标题 -->
+    <h2 class="text-lg font-semibold leading-snug text-[hsl(var(--foreground))] transition-colors group-hover:text-[hsl(var(--primary))]">
+      {title}
+    </h2>
+
+    <!-- 摘要 -->
+    {excerpt && (
+      <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">
+        {excerpt}
+      </p>
+    )}
+
+    <!-- 元信息 -->
+    <div class="mt-4 flex items-center gap-3 text-xs text-[hsl(var(--muted-foreground))]">
+      <time datetime={publishedAt.toISOString()}>
+        {formatDate(publishedAt)}
+      </time>
+      <span>·</span>
+      <span>{estimateReadingTime(article.body ?? '')} 分钟阅读</span>
+    </div>
+  </a>
+</article>

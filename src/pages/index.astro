@@ -1,0 +1,14 @@
+---
+// ─── 首页 — 水族馆水壁 ───
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import WaterPool from '@/components/WaterPool.tsx';
+import { SITE_DESCRIPTION } from '@/lib/constants';
+---
+
+<BaseLayout
+  title="首页"
+  description={SITE_DESCRIPTION}
+  hideBackground
+>
+  <WaterPool client:load />
+</BaseLayout>

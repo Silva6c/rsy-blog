@@ -1,0 +1,90 @@
+---
+// ─── 管理面板（毛玻璃风格） ───
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { BASE } from '@/lib/constants';
+---
+
+<BaseLayout title="管理面板" description="博客管理后台">
+  <div class="mx-auto max-w-2xl">
+    <h1 class="mb-2 text-2xl font-bold" style="font-family: 'Noto Serif SC', serif;">管理面板</h1>
+    <p class="mb-8 text-sm text-[hsl(var(--muted-foreground))]">
+      博客系统管理中心。在线编辑功能将在后续版本中提供。
+    </p>
+
+    <!-- 管理入口卡片 -->
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="glass-card p-6">
+        <h2 class="font-semibold">📝 文章管理</h2>
+        <p class="mt-1 text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">
+          当前为 Markdown 驱动模式。文章以 <code class="rounded bg-[hsl(var(--code-bg))] px-1 py-0.5 text-xs">.md</code>
+          文件存放在 <code class="rounded bg-[hsl(var(--code-bg))] px-1 py-0.5 text-xs">src/content/blog/</code>，
+          推送 Git 后自动部署上线。
+        </p>
+        <p class="mt-3 text-xs text-[hsl(var(--muted-foreground))]">
+          💡 未来将支持在线 Markdown 编辑器，通过 Supabase 实时保存。
+        </p>
+      </div>
+
+      <div class="glass-card p-6">
+        <h2 class="font-semibold">🖼️ 图片存储</h2>
+        <p class="mt-1 text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">
+          图片存储在 Cloudflare R2 免费桶中（10GB 免费额度）。可通过 Dashboard 或 API 上传。
+        </p>
+        <a
+          href="https://dash.cloudflare.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="mt-3 inline-flex items-center gap-1 text-xs font-medium text-[hsl(var(--primary))] hover:underline"
+        >
+          Cloudflare Dashboard
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+        </a>
+      </div>
+
+      <div class="glass-card p-6">
+        <h2 class="font-semibold">🔐 用户认证</h2>
+        <p class="mt-1 text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">
+          Supabase Auth 提供邮箱登录和 OAuth。注册后首个用户需手动设为管理员。
+        </p>
+        <a
+          href="https://supabase.com/dashboard"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="mt-3 inline-flex items-center gap-1 text-xs font-medium text-[hsl(var(--primary))] hover:underline"
+        >
+          Supabase Dashboard
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+        </a>
+      </div>
+
+      <div class="glass-card p-6">
+        <h2 class="font-semibold">📊 站点统计</h2>
+        <p class="mt-1 text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">
+          GitHub 仓库自带流量统计（Insights → Traffic），可查看 PV、UV、来源等基础数据。
+        </p>
+        <a
+          href="https://github.com/Silva6c/rsy-blog/graphs/traffic"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="mt-3 inline-flex items-center gap-1 text-xs font-medium text-[hsl(var(--primary))] hover:underline"
+        >
+          查看统计
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- 快速操作 -->
+    <div class="mt-8 glass-card p-6">
+      <h2 class="font-semibold">⚡ 快速操作</h2>
+      <div class="mt-3 flex flex-wrap gap-3">
+        <a href={BASE} class="glass-button inline-block px-4 py-2 text-sm transition-all hover:text-[hsl(var(--foreground))]">
+          返回首页
+        </a>
+        <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="glass-button inline-block px-4 py-2 text-sm transition-all hover:text-[hsl(var(--foreground))]">
+          管理 GitHub
+        </a>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

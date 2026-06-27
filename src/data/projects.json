@@ -1,0 +1,25 @@
+{
+  "projects": [
+    {
+      "name": "RSY Blog",
+      "description": "零运行成本个人博客，基于 Astro SSG + GitHub Pages，毛玻璃设计风格，Canvas 2D 水族馆首页",
+      "url": "https://github.com/Silva6c/rsy-blog",
+      "tags": ["Astro", "TypeScript", "TailwindCSS"],
+      "stars": null
+    },
+    {
+      "name": "claude-viewer",
+      "description": "Claude Code 对话记录浏览器，解析 .jsonl 转录文件，可视化回放编程会话",
+      "url": "https://github.com/Silva6c/claude-viewer",
+      "tags": ["Claude", "Viewer", "Tooling"],
+      "stars": null
+    },
+    {
+      "name": "face-recognition-clustering",
+      "description": "人脸识别与聚类分析工具，基于深度学习模型实现人脸检测、特征提取与无监督聚类",
+      "url": "https://github.com/Silva6c/face-recognition-clustering",
+      "tags": ["Python", "OpenCV", "Clustering", "Deep Learning"],
+      "stars": null
+    }
+  ]
+}

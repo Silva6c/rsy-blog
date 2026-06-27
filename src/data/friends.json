@@ -1,0 +1,10 @@
+{
+  "friends": [
+    {
+      "name": "Astro",
+      "url": "https://astro.build",
+      "description": "现代化静态站点框架",
+      "avatar": ""
+    }
+  ]
+}
